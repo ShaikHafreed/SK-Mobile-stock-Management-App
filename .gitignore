@@ -1,0 +1,23 @@
+﻿# Environment files - NEVER push
+backend/.env
+.env
+*.env
+
+# Python cache
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Flutter
+sk_mobiles/build/
+sk_mobiles/.dart_tool/
+sk_mobiles/.flutter-plugins
+sk_mobiles/.flutter-plugins-dependencies
+sk_mobiles/android/.gradle/
+sk_mobiles/android/local.properties
+sk_mobiles/android/gradle/wrapper/gradle-wrapper.jar
+
+# IDE
+.vscode/settings.json
+.idea/
