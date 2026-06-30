@@ -91,8 +91,8 @@ class _AddProductScreenState
       builder: (ctx) => Container(
         decoration: BoxDecoration(
           color: Theme.of(context).scaffoldBackgroundColor,
-          borderRadius:
-              const BorderRadius.vertical(top: Radius.circular(20)),
+          borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(20)),
         ),
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -158,6 +158,7 @@ class _AddProductScreenState
     );
   }
 
+  // ── FIXED: Uses correct new product ID ────────────────────
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
@@ -179,19 +180,47 @@ class _AddProductScreenState
       data['product_name'] = _nameCtrl.text.trim();
     }
 
-    final success =
+    // Step 1: Add product and get its NEW ID
+    final newProductId =
         await ref.read(productsProvider.notifier).addProduct(data);
 
-    if (success && _selectedImage != null) {
-      // Get the newly added product ID
-      final products = ref.read(productsProvider).products;
-      if (products.isNotEmpty) {
-        final newProduct = products.last;
-        await ImageUploadHelper.uploadProductImage(
-          _selectedImage!,
-          newProduct.id,
+    // Step 2: Upload image to the CORRECT new product
+    if (newProductId != null && _selectedImage != null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Row(
+              children: [
+                SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                    strokeWidth: 2,
+                  ),
+                ),
+                SizedBox(width: 12),
+                Text('Uploading image...'),
+              ],
+            ),
+            duration: Duration(seconds: 15),
+            behavior: SnackBarBehavior.floating,
+          ),
         );
-        // Reload to get updated image
+      }
+
+      // Upload to correct product ID
+      final imageUrl = await ImageUploadHelper.uploadProductImage(
+        _selectedImage!,
+        newProductId,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      }
+
+      // Reload to show image
+      if (imageUrl != null) {
         await ref
             .read(productsProvider.notifier)
             .loadProducts(widget.categoryId);
@@ -200,12 +229,18 @@ class _AddProductScreenState
 
     setState(() => _isLoading = false);
 
-    if (success && mounted) {
+    if (newProductId != null && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('✅ Product added successfully!'),
+        SnackBar(
+          content: Text(
+            _selectedImage != null
+                ? '✅ Product added with image!'
+                : '✅ Product added successfully!',
+          ),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10)),
         ),
       );
       context.pop();
@@ -239,19 +274,21 @@ class _AddProductScreenState
                 child: Container(
                   height: 180,
                   decoration: BoxDecoration(
-                    color: AppTheme.primary.withValues(alpha: 0.05),
+                    color:
+                        AppTheme.primary.withValues(alpha: 0.05),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: AppTheme.primary.withValues(alpha: 0.3),
+                      color: AppTheme.primary
+                          .withValues(alpha: 0.3),
                       width: 1.5,
-                      style: BorderStyle.solid,
                     ),
                   ),
                   child: _selectedImage != null
                       ? Stack(
                           children: [
                             ClipRRect(
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius:
+                                  BorderRadius.circular(14),
                               child: Image.file(
                                 _selectedImage!,
                                 width: double.infinity,
@@ -266,13 +303,15 @@ class _AddProductScreenState
                                 onTap: () => setState(
                                     () => _selectedImage = null),
                                 child: Container(
-                                  padding: const EdgeInsets.all(6),
+                                  padding:
+                                      const EdgeInsets.all(6),
                                   decoration: const BoxDecoration(
                                     color: Colors.red,
                                     shape: BoxShape.circle,
                                   ),
                                   child: const Icon(Icons.close,
-                                      color: Colors.white, size: 16),
+                                      color: Colors.white,
+                                      size: 16),
                                 ),
                               ),
                             ),
@@ -280,8 +319,10 @@ class _AddProductScreenState
                               bottom: 8,
                               right: 8,
                               child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 10, vertical: 6),
+                                padding:
+                                    const EdgeInsets.symmetric(
+                                        horizontal: 10,
+                                        vertical: 6),
                                 decoration: BoxDecoration(
                                   color: Colors.black54,
                                   borderRadius:
@@ -342,7 +383,7 @@ class _AddProductScreenState
               ),
               const SizedBox(height: 20),
 
-              // ── BRAND ────────────────────────────────────
+              // ── BRAND ─────────────────────────────────────
               TextFormField(
                 controller: _brandCtrl,
                 decoration: const InputDecoration(
@@ -355,7 +396,7 @@ class _AddProductScreenState
               ),
               const SizedBox(height: 14),
 
-              // ── CATEGORY SPECIFIC FIELDS ─────────────────
+              // ── CATEGORY SPECIFIC FIELDS ──────────────────
               if (_isMobileCovers) ...[
                 TextFormField(
                   controller: _modelCtrl,
@@ -416,7 +457,7 @@ class _AddProductScreenState
               ],
               const SizedBox(height: 14),
 
-              // ── QUANTITY ─────────────────────────────────
+              // ── QUANTITY ──────────────────────────────────
               Row(
                 children: [
                   Expanded(
@@ -437,7 +478,6 @@ class _AddProductScreenState
                     ),
                   ),
                   const SizedBox(width: 10),
-                  // Quick qty buttons
                   Column(
                     children: [
                       _SmallQtyBtn(
@@ -446,8 +486,8 @@ class _AddProductScreenState
                         onTap: () {
                           final v =
                               int.tryParse(_qtyCtrl.text) ?? 0;
-                          setState(() =>
-                              _qtyCtrl.text = '${v + 1}');
+                          setState(
+                              () => _qtyCtrl.text = '${v + 1}');
                         },
                       ),
                       const SizedBox(height: 6),
@@ -458,8 +498,8 @@ class _AddProductScreenState
                           final v =
                               int.tryParse(_qtyCtrl.text) ?? 0;
                           if (v > 0) {
-                            setState(() =>
-                                _qtyCtrl.text = '${v - 1}');
+                            setState(
+                                () => _qtyCtrl.text = '${v - 1}');
                           }
                         },
                       ),
@@ -469,7 +509,7 @@ class _AddProductScreenState
               ),
               const SizedBox(height: 14),
 
-              // ── NOTES ────────────────────────────────────
+              // ── NOTES ─────────────────────────────────────
               TextFormField(
                 controller: _notesCtrl,
                 maxLines: 3,
@@ -505,7 +545,8 @@ class _AddProductScreenState
                         mainAxisAlignment:
                             MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.check_circle_outline),
+                          const Icon(
+                              Icons.check_circle_outline),
                           const SizedBox(width: 8),
                           Text(
                             _selectedImage != null
@@ -526,6 +567,7 @@ class _AddProductScreenState
   }
 }
 
+// ─── IMAGE SOURCE BUTTON ───────────────────────────────────────
 class _ImageSourceButton extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -548,17 +590,17 @@ class _ImageSourceButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withValues(alpha: 0.3)),
+          border:
+              Border.all(color: color.withValues(alpha: 0.3)),
         ),
         child: Column(
           children: [
             Icon(icon, size: 32, color: color),
             const SizedBox(height: 8),
-            Text(
-              label,
-              style: TextStyle(
-                  color: color, fontWeight: FontWeight.w600),
-            ),
+            Text(label,
+                style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.w600)),
           ],
         ),
       ),
@@ -566,6 +608,7 @@ class _ImageSourceButton extends StatelessWidget {
   }
 }
 
+// ─── SMALL QTY BUTTON ─────────────────────────────────────────
 class _SmallQtyBtn extends StatelessWidget {
   final IconData icon;
   final Color color;
@@ -587,8 +630,8 @@ class _SmallQtyBtn extends StatelessWidget {
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(10),
-          border:
-              Border.all(color: color.withValues(alpha: 0.3)),
+          border: Border.all(
+              color: color.withValues(alpha: 0.3)),
         ),
         child: Icon(icon, color: color, size: 20),
       ),

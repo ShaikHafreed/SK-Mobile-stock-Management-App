@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "795406287321",
+    "project_id": "sk-mobiles-c5608",
+    "storage_bucket": "sk-mobiles-c5608.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:795406287321:android:7b42b20d9c31f55a2059c8",
+        "android_client_info": {
+          "package_name": "com.skmobiles.sk_mobiles"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "795406287321-r557d4nouvfu44pq7c0mtajim960t554.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.skmobiles.sk_mobiles",
+            "certificate_hash": "3d55d0dc98f74fc3921087377e81b1bbccc9006c"
+          }
+        },
+        {
+          "client_id": "795406287321-tgp0ski35nobhgunu0rsijq5ida9obdv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBu6Zj0Rcxz1MyH3s4SIhLl0X2iK_nKMA0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "795406287321-tgp0ski35nobhgunu0rsijq5ida9obdv.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

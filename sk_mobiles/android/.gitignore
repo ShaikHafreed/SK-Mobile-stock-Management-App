@@ -1,14 +1,18 @@
-gradle-wrapper.jar
-/.gradle
-/captures/
-/gradlew
-/gradlew.bat
-/local.properties
-GeneratedPluginRegistrant.java
-.cxx/
+# Environment files - NEVER push these
+backend/.env
+.env
 
-# Remember to never publicly share your keystore.
-# See https://flutter.dev/to/reference-keystore
-key.properties
-**/*.keystore
-**/*.jks
+# Python cache
+**/__pycache__/
+*.pyc
+*.pyo
+
+# Flutter build
+sk_mobiles/build/
+sk_mobiles/.dart_tool/
+sk_mobiles/.flutter-plugins
+sk_mobiles/.flutter-plugins-dependencies
+
+# IDE
+.vscode/settings.json
+.idea/
