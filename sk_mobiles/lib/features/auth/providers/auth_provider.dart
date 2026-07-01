@@ -10,9 +10,17 @@ class AuthState {
   final UserModel? user;
   final String? error;
 
-  AuthState({this.isLoading = false, this.user, this.error});
+  AuthState({
+    this.isLoading = false,
+    this.user,
+    this.error,
+  });
 
-  AuthState copyWith({bool? isLoading, UserModel? user, String? error}) {
+  AuthState copyWith({
+    bool? isLoading,
+    UserModel? user,
+    String? error,
+  }) {
     return AuthState(
       isLoading: isLoading ?? this.isLoading,
       user: user ?? this.user,
@@ -22,18 +30,30 @@ class AuthState {
 }
 
 class AuthNotifier extends StateNotifier<AuthState> {
-  AuthNotifier() : super(AuthState());
+  AuthNotifier() : super(AuthState()) {
+    loadUser();
+  }
 
-  Future<bool> login(String username, String password) async {
-    state = state.copyWith(isLoading: true, error: null);
+  Future<bool> login(
+      String username, String password) async {
+    state = state.copyWith(
+        isLoading: true, error: null);
     try {
-      final response = await ApiClient().login(username, password);
+      final response =
+          await ApiClient().login(username, password);
       final data = response.data;
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(AppConstants.tokenKey, data['access_token']);
-      await prefs.setString(AppConstants.refreshTokenKey, data['refresh_token']);
-      await prefs.setString(AppConstants.userKey, jsonEncode(data['user']));
+      final prefs =
+          await SharedPreferences.getInstance();
+      await prefs.setString(
+          AppConstants.tokenKey,
+          data['access_token']);
+      await prefs.setString(
+          AppConstants.refreshTokenKey,
+          data['refresh_token'] ?? '');
+      await prefs.setString(
+          AppConstants.userKey,
+          jsonEncode(data['user']));
 
       state = state.copyWith(
         isLoading: false,
@@ -50,22 +70,38 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs =
+        await SharedPreferences.getInstance();
     await prefs.remove(AppConstants.tokenKey);
-    await prefs.remove(AppConstants.refreshTokenKey);
+    await prefs.remove(
+        AppConstants.refreshTokenKey);
     await prefs.remove(AppConstants.userKey);
+    // Keep remember me credentials if set
     state = AuthState();
   }
 
   Future<void> loadUser() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userData = prefs.getString(AppConstants.userKey);
-    if (userData != null) {
-      state = state.copyWith(user: UserModel.fromJson(jsonDecode(userData)));
+    try {
+      final prefs =
+          await SharedPreferences.getInstance();
+      final userData =
+          prefs.getString(AppConstants.userKey);
+      final token =
+          prefs.getString(AppConstants.tokenKey);
+
+      if (userData != null && token != null) {
+        state = state.copyWith(
+          user: UserModel.fromJson(
+              jsonDecode(userData)),
+        );
+      }
+    } catch (e) {
+      // Silent fail
     }
   }
 }
 
-final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  return AuthNotifier();
-});
+final authProvider =
+    StateNotifierProvider<AuthNotifier, AuthState>(
+  (ref) => AuthNotifier(),
+);

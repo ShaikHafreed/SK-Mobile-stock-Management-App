@@ -36,7 +36,4 @@ class ThemeNotifier extends StateNotifier<AppThemeMode> {
   }
 }
 
-final themeProvider =
-    StateNotifierProvider<ThemeNotifier, AppThemeMode>((ref) {
-  return ThemeNotifier();
-});
+final themeProvider = StateNotifierProvider<ThemeNotifier, AppThemeMode>((ref) => ThemeNotifier());

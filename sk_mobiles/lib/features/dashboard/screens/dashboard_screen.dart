@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../providers/dashboard_provider.dart';
-import '../../../models/category_model.dart';
-import '../../../core/theme/app_theme.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../../../core/providers/theme_provider.dart';
-import '../../../features/auth/providers/auth_provider.dart';
+import '../../../core/theme/app_theme.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -15,61 +14,141 @@ class DashboardScreen extends ConsumerStatefulWidget {
       _DashboardScreenState();
 }
 
-class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+class _DashboardScreenState
+    extends ConsumerState<DashboardScreen>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animCtrl;
+  late Animation<double> _fadeAnim;
+
   @override
   void initState() {
     super.initState();
-    Future.microtask(
-        () => ref.read(dashboardProvider.notifier).loadStats());
+    _animCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+    _fadeAnim =
+        Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+          parent: _animCtrl,
+          curve: Curves.easeOut),
+    );
+    Future.microtask(() {
+      ref
+          .read(dashboardProvider.notifier)
+          .loadStats();
+      _animCtrl.forward();
+    });
   }
 
-  void _showThemeDialog() {
+  @override
+  void dispose() {
+    _animCtrl.dispose();
+    super.dispose();
+  }
+
+  void _showThemePicker() {
     final current = ref.read(themeProvider);
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Choose Theme'),
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _ThemeOption(
-              icon: Icons.light_mode,
-              label: 'Light Mode',
-              isSelected: current == AppThemeMode.light,
-              onTap: () {
-                ref
-                    .read(themeProvider.notifier)
-                    .setTheme(AppThemeMode.light);
-                Navigator.pop(ctx);
-              },
-            ),
-            _ThemeOption(
-              icon: Icons.dark_mode,
-              label: 'Dark Mode',
-              isSelected: current == AppThemeMode.dark,
-              onTap: () {
-                ref
-                    .read(themeProvider.notifier)
-                    .setTheme(AppThemeMode.dark);
-                Navigator.pop(ctx);
-              },
-            ),
-            _ThemeOption(
-              icon: Icons.settings_suggest,
-              label: 'System Default',
-              isSelected: current == AppThemeMode.system,
-              onTap: () {
-                ref
-                    .read(themeProvider.notifier)
-                    .setTheme(AppThemeMode.system);
-                Navigator.pop(ctx);
-              },
-            ),
-          ],
-        ),
-      ),
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        final isDarkSheet =
+            Theme.of(context).brightness ==
+                Brightness.dark;
+        return Container(
+          decoration: BoxDecoration(
+            color: isDarkSheet
+                ? const Color(0xFF1A1A2E)
+                : Colors.white,
+            borderRadius:
+                const BorderRadius.vertical(
+                    top: Radius.circular(24)),
+          ),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius:
+                      BorderRadius.circular(2),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Appearance',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: isDarkSheet
+                      ? Colors.white
+                      : Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                children: [
+                  _ThemeOption(
+                    icon: Icons.wb_sunny_outlined,
+                    label: 'Light',
+                    isActive: current ==
+                        AppThemeMode.light,
+                    color: Colors.amber,
+                    isDark: isDarkSheet,
+                    onTap: () {
+                      ref
+                          .read(
+                              themeProvider.notifier)
+                          .setTheme(
+                              AppThemeMode.light);
+                      Navigator.pop(ctx);
+                    },
+                  ),
+                  const SizedBox(width: 12),
+                  _ThemeOption(
+                    icon: Icons.nightlight_round,
+                    label: 'Dark',
+                    isActive: current ==
+                        AppThemeMode.dark,
+                    color: Colors.indigo,
+                    isDark: isDarkSheet,
+                    onTap: () {
+                      ref
+                          .read(
+                              themeProvider.notifier)
+                          .setTheme(
+                              AppThemeMode.dark);
+                      Navigator.pop(ctx);
+                    },
+                  ),
+                  const SizedBox(width: 12),
+                  _ThemeOption(
+                    icon: Icons.brightness_auto,
+                    label: 'System',
+                    isActive: current ==
+                        AppThemeMode.system,
+                    color: Colors.teal,
+                    isDark: isDarkSheet,
+                    onTap: () {
+                      ref
+                          .read(
+                              themeProvider.notifier)
+                          .setTheme(
+                              AppThemeMode.system);
+                      Navigator.pop(ctx);
+                    },
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -78,312 +157,689 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
     final dashState = ref.watch(dashboardProvider);
     final authState = ref.watch(authProvider);
     final themeMode = ref.watch(themeProvider);
+    final isDark =
+        Theme.of(context).brightness ==
+            Brightness.dark;
 
     IconData themeIcon;
     switch (themeMode) {
       case AppThemeMode.light:
-        themeIcon = Icons.light_mode;
+        themeIcon = Icons.wb_sunny_outlined;
         break;
       case AppThemeMode.dark:
-        themeIcon = Icons.dark_mode;
+        themeIcon = Icons.nightlight_round;
         break;
-      case AppThemeMode.system:
-        themeIcon = Icons.settings_suggest;
-        break;
+      default:
+        themeIcon = Icons.brightness_auto;
     }
 
     return Scaffold(
+      backgroundColor: isDark
+          ? const Color(0xFF0A0A1A)
+          : const Color(0xFFF0F4FF),
       appBar: AppBar(
         title: const Text('SK Mobiles'),
+        backgroundColor: AppTheme.primary,
+        foregroundColor: Colors.white,
+        elevation: 0,
         actions: [
+          // ── PROFILE ICON ──────────────────────
+          IconButton(
+            icon: const Icon(Icons.person_outline),
+            onPressed: () =>
+                context.push('/profile'),
+            tooltip: 'Profile',
+          ),
+          // ── SEARCH ICON ───────────────────────
           IconButton(
             icon: const Icon(Icons.search),
-            onPressed: () => context.push('/search'),
+            onPressed: () =>
+                context.push('/search'),
           ),
+          // ── THEME ICON ────────────────────────
           IconButton(
             icon: Icon(themeIcon),
-            onPressed: _showThemeDialog,
+            onPressed: _showThemePicker,
           ),
+          // ── MORE MENU ─────────────────────────
           PopupMenuButton(
             icon: const Icon(Icons.more_vert),
-            itemBuilder: (context) => [
-              if (authState.user?.isAdmin == true)
-                PopupMenuItem(
-                  child: const ListTile(
-                    leading: Icon(Icons.history),
-                    title: Text('Activity Logs'),
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  onTap: () => context.push('/logs'),
-                ),
+            color: isDark
+                ? const Color(0xFF1A1A2E)
+                : Colors.white,
+            itemBuilder: (ctx) => [
               PopupMenuItem(
-                child: const ListTile(
-                  leading: Icon(Icons.table_chart),
-                  title: Text('Excel Reports'),
-                  contentPadding: EdgeInsets.zero,
+                child: ListTile(
+                  leading: const Icon(
+                      Icons.receipt_long,
+                      color: Colors.blue),
+                  title: Text(
+                    'Activity Logs',
+                    style: TextStyle(
+                        color: isDark
+                            ? Colors.white
+                            : Colors.black87),
+                  ),
+                  contentPadding:
+                      EdgeInsets.zero,
+                  dense: true,
                 ),
-                onTap: () => context.push('/excel'),
+                onTap: () => Future.delayed(
+                  const Duration(
+                      milliseconds: 100),
+                  () => context.push('/logs'),
+                ),
+              ),
+              PopupMenuItem(
+                child: ListTile(
+                  leading: const Icon(
+                      Icons.table_chart,
+                      color: Colors.green),
+                  title: Text(
+                    'Excel Reports',
+                    style: TextStyle(
+                        color: isDark
+                            ? Colors.white
+                            : Colors.black87),
+                  ),
+                  contentPadding:
+                      EdgeInsets.zero,
+                  dense: true,
+                ),
+                onTap: () => Future.delayed(
+                  const Duration(
+                      milliseconds: 100),
+                  () => context.push('/excel'),
+                ),
+              ),
+              PopupMenuItem(
+                child: ListTile(
+                  leading: const Icon(
+                      Icons.receipt,
+                      color: Colors.orange),
+                  title: Text(
+                    'Billing',
+                    style: TextStyle(
+                        color: isDark
+                            ? Colors.white
+                            : Colors.black87),
+                  ),
+                  contentPadding:
+                      EdgeInsets.zero,
+                  dense: true,
+                ),
+                onTap: () => Future.delayed(
+                  const Duration(
+                      milliseconds: 100),
+                  () => context.push('/billing'),
+                ),
+              ),
+              PopupMenuItem(
+                child: ListTile(
+                  leading: const Icon(
+                      Icons.person,
+                      color: Colors.purple),
+                  title: Text(
+                    'Profile',
+                    style: TextStyle(
+                        color: isDark
+                            ? Colors.white
+                            : Colors.black87),
+                  ),
+                  contentPadding:
+                      EdgeInsets.zero,
+                  dense: true,
+                ),
+                onTap: () => Future.delayed(
+                  const Duration(
+                      milliseconds: 100),
+                  () => context.push('/profile'),
+                ),
               ),
               PopupMenuItem(
                 child: const ListTile(
-                  leading: Icon(Icons.logout, color: Colors.red),
-                  title: Text('Logout',
-                      style: TextStyle(color: Colors.red)),
-                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(Icons.logout,
+                      color: Colors.red),
+                  title: Text(
+                    'Logout',
+                    style: TextStyle(
+                        color: Colors.red),
+                  ),
+                  contentPadding:
+                      EdgeInsets.zero,
+                  dense: true,
                 ),
                 onTap: () async {
-                  await ref.read(authProvider.notifier).logout();
-                  if (context.mounted) context.go('/login');
+                  await ref
+                      .read(authProvider.notifier)
+                      .logout();
+                  if (context.mounted) {
+                    context.go('/login');
+                  }
                 },
               ),
             ],
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () =>
-            ref.read(dashboardProvider.notifier).loadStats(),
-        child: dashState.isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : dashState.error != null
-                ? Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+      body: FadeTransition(
+        opacity: _fadeAnim,
+        child: RefreshIndicator(
+          onRefresh: () => ref
+              .read(dashboardProvider.notifier)
+              .loadStats(),
+          child: SingleChildScrollView(
+            physics:
+                const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
+              children: [
+                // ── GREETING ──────────────────
+                _GreetingCard(
+                  username:
+                      authState.user?.username ??
+                          'User',
+                  isDark: isDark,
+                ),
+                const SizedBox(height: 16),
+
+                // ── STATS ─────────────────────
+                Row(
+                  children: [
+                    Expanded(
+                      child: _StatCard(
+                        title: 'Total Products',
+                        value:
+                            '${dashState.totalProducts}',
+                        icon: Icons.inventory_2,
+                        gradient:
+                            const LinearGradient(
+                          colors: [
+                            Color(0xFF1565C0),
+                            Color(0xFF42A5F5),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _StatCard(
+                        title: 'Total Stock',
+                        value:
+                            '${dashState.totalStock}',
+                        icon: Icons.warehouse,
+                        gradient:
+                            const LinearGradient(
+                          colors: [
+                            Color(0xFF2E7D32),
+                            Color(0xFF66BB6A),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // ── LOW STOCK ─────────────────
+                if (dashState.lowStockCount > 0) ...[
+                  Container(
+                    padding:
+                        const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.red.shade400,
+                          Colors.red.shade700,
+                        ],
+                      ),
+                      borderRadius:
+                          BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.red
+                              .withValues(alpha: 0.3),
+                          blurRadius: 12,
+                          offset:
+                              const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
                       children: [
-                        const Icon(Icons.error_outline,
-                            size: 48, color: Colors.red),
-                        const SizedBox(height: 16),
-                        Text(dashState.error!),
-                        const SizedBox(height: 16),
+                        Container(
+                          padding:
+                              const EdgeInsets.all(
+                                  8),
+                          decoration: BoxDecoration(
+                            color: Colors.white
+                                .withValues(
+                                    alpha: 0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                              Icons.warning_amber,
+                              color: Colors.white,
+                              size: 22),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment:
+                                CrossAxisAlignment
+                                    .start,
+                            children: [
+                              const Text(
+                                'Low Stock Alert!',
+                                style: TextStyle(
+                                  color:
+                                      Colors.white,
+                                  fontWeight:
+                                      FontWeight
+                                          .bold,
+                                  fontSize: 14,
+                                ),
+                              ),
+                              Text(
+                                '${dashState.lowStockCount} products need restocking',
+                                style: const TextStyle(
+                                    color: Colors
+                                        .white70,
+                                    fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+
+                // ── QUICK ACTIONS ─────────────
+                Text(
+                  'Quick Actions',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: isDark
+                        ? Colors.white
+                        : Colors.grey.shade800,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _QuickAction(
+                        icon: Icons.qr_code_scanner,
+                        label: 'Scan\nBarcode',
+                        color:
+                            const Color(0xFF7B1FA2),
+                        isDark: isDark,
+                        onTap: () => context
+                            .push('/barcode'),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _QuickAction(
+                        icon: Icons.receipt,
+                        label: 'Create\nBill',
+                        color:
+                            const Color(0xFFE65100),
+                        isDark: isDark,
+                        onTap: () => context
+                            .push('/billing'),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _QuickAction(
+                        icon: Icons.search,
+                        label: 'Search\nStock',
+                        color:
+                            const Color(0xFF00695C),
+                        isDark: isDark,
+                        onTap: () => context
+                            .push('/search'),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _QuickAction(
+                        icon: Icons.table_chart,
+                        label: 'Export\nExcel',
+                        color:
+                            const Color(0xFF1565C0),
+                        isDark: isDark,
+                        onTap: () => context
+                            .push('/excel'),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+
+                // ── TEMPER GLASS ──────────────
+                GestureDetector(
+                  onTap: () =>
+                      context.push('/temper-glass'),
+                  child: Container(
+                    padding:
+                        const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient:
+                          const LinearGradient(
+                        colors: [
+                          Color(0xFF00695C),
+                          Color(0xFF26A69A),
+                        ],
+                      ),
+                      borderRadius:
+                          BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(
+                                  0xFF00695C)
+                              .withValues(alpha: 0.3),
+                          blurRadius: 12,
+                          offset:
+                              const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding:
+                              const EdgeInsets.all(
+                                  10),
+                          decoration: BoxDecoration(
+                            color: Colors.white
+                                .withValues(
+                                    alpha: 0.2),
+                            borderRadius:
+                                BorderRadius.circular(
+                                    10),
+                          ),
+                          child: const Icon(
+                              Icons.view_module,
+                              color: Colors.white,
+                              size: 24),
+                        ),
+                        const SizedBox(width: 14),
+                        const Expanded(
+                          child: Column(
+                            crossAxisAlignment:
+                                CrossAxisAlignment
+                                    .start,
+                            children: [
+                              Text(
+                                'Temper Glass Manager',
+                                style: TextStyle(
+                                  color:
+                                      Colors.white,
+                                  fontWeight:
+                                      FontWeight
+                                          .bold,
+                                  fontSize: 15,
+                                ),
+                              ),
+                              Text(
+                                'Manage boxes and items',
+                                style: TextStyle(
+                                    color: Colors
+                                        .white70,
+                                    fontSize: 12),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(
+                            Icons.arrow_forward_ios,
+                            color: Colors.white70,
+                            size: 16),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // ── CATEGORIES ────────────────
+                Text(
+                  'Categories',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: isDark
+                        ? Colors.white
+                        : Colors.grey.shade800,
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                if (dashState.isLoading)
+                  const Center(
+                      child:
+                          CircularProgressIndicator())
+                else if (dashState.error != null)
+                  Center(
+                    child: Column(
+                      children: [
+                        Text(dashState.error!,
+                            style: const TextStyle(
+                                color: Colors.red)),
+                        const SizedBox(height: 8),
                         ElevatedButton(
                           onPressed: () => ref
-                              .read(dashboardProvider.notifier)
+                              .read(dashboardProvider
+                                  .notifier)
                               .loadStats(),
-                          child: const Text('Retry'),
+                          child:
+                              const Text('Retry'),
                         ),
                       ],
                     ),
                   )
-                : SingleChildScrollView(
+                else
+                  GridView.builder(
+                    shrinkWrap: true,
                     physics:
-                        const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
-                      children: [
-                        // Welcome section with animation
-                        _AnimatedSection(
-                          delay: 0,
-                          child: Column(
-                            crossAxisAlignment:
-                                CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Hello, ${authState.user?.fullName ?? authState.user?.username ?? 'User'}! 👋',
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              const Text(
-                                'Here\'s your stock overview',
-                                style: TextStyle(
-                                    color: Colors.grey),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-
-                        // Stats with animation
-                        _AnimatedSection(
-                          delay: 100,
-                          child: Row(
-                            children: [
-                              _StatCard(
-                                title: 'Total Products',
-                                value:
-                                    '${dashState.totalProducts}',
-                                icon: Icons.inventory_2,
-                                color: AppTheme.primary,
-                              ),
-                              const SizedBox(width: 12),
-                              _StatCard(
-                                title: 'Total Stock',
-                                value: '${dashState.totalStock}',
-                                icon: Icons.warehouse,
-                                color: AppTheme.success,
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-
-                        // Low stock warning with animation
-                        if (dashState.totalLowStock > 0)
-                          _AnimatedSection(
-                            delay: 150,
-                            child: Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.red.shade50,
-                                borderRadius:
-                                    BorderRadius.circular(12),
-                                border: Border.all(
-                                    color: Colors.red.shade200),
-                              ),
-                              child: Row(
-                                children: [
-                                  const Icon(
-                                      Icons.warning_amber,
-                                      color: Colors.red),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      '${dashState.totalLowStock} products are low on stock (< 3 units)',
-                                      style: const TextStyle(
-                                        color: Colors.red,
-                                        fontWeight:
-                                            FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        const SizedBox(height: 20),
-
-                        // Categories title with animation
-                        _AnimatedSection(
-                          delay: 200,
-                          child: const Text(
-                            'Categories',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-
-                        // Categories grid with staggered animation
-                        GridView.builder(
-                          shrinkWrap: true,
-                          physics:
-                              const NeverScrollableScrollPhysics(),
-                          gridDelegate:
-                              const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            childAspectRatio: 1.1,
-                            crossAxisSpacing: 12,
-                            mainAxisSpacing: 12,
-                          ),
-                          itemCount: dashState.categories.length,
-                          itemBuilder: (context, index) {
-                            final cat =
-                                dashState.categories[index];
-                            return _AnimatedSection(
-                              delay: 250 + (index * 80),
-                              child: _CategoryCard(
-                                  category: cat),
-                            );
-                          },
-                        ),
-                        const SizedBox(height: 80),
-                      ],
+                        const NeverScrollableScrollPhysics(),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 1.3,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
                     ),
+                    itemCount:
+                        dashState.categories.length,
+                    itemBuilder: (context, index) {
+                      final cat =
+                          dashState.categories[index];
+                      return _CategoryCard(
+                        category: cat,
+                        index: index,
+                        isDark: isDark,
+                        onTap: () => context.push(
+                          '/products/${cat.id}/${Uri.encodeComponent(cat.name)}',
+                        ),
+                      );
+                    },
                   ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.push('/temper-glass'),
-        backgroundColor: AppTheme.primary,
-        icon:
-            const Icon(Icons.grid_view, color: Colors.white),
-        label: const Text('Temper Glass',
-            style: TextStyle(color: Colors.white)),
+                const SizedBox(height: 20),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
 }
 
-// ─── ANIMATED SECTION ─────────────────────────────────────────
-class _AnimatedSection extends StatefulWidget {
-  final Widget child;
-  final int delay;
+// ── GREETING CARD ──────────────────────────────────────────────
+class _GreetingCard extends StatelessWidget {
+  final String username;
+  final bool isDark;
 
-  const _AnimatedSection({
-    required this.child,
-    this.delay = 0,
+  const _GreetingCard({
+    required this.username,
+    required this.isDark,
   });
 
-  @override
-  State<_AnimatedSection> createState() =>
-      _AnimatedSectionState();
-}
-
-class _AnimatedSectionState extends State<_AnimatedSection>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _fadeAnim;
-  late Animation<Offset> _slideAnim;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 500),
-    );
-    _fadeAnim = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(
-          parent: _controller, curve: Curves.easeOut),
-    );
-    _slideAnim = Tween<Offset>(
-      begin: const Offset(0, 0.2),
-      end: Offset.zero,
-    ).animate(
-      CurvedAnimation(
-          parent: _controller, curve: Curves.easeOut),
-    );
-
-    Future.delayed(Duration(milliseconds: widget.delay), () {
-      if (mounted) _controller.forward();
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  String _getGreeting() {
+    final h = DateTime.now().hour;
+    if (h < 12) return 'Good Morning';
+    if (h < 17) return 'Good Afternoon';
+    return 'Good Evening';
   }
 
   @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _fadeAnim,
-      child: SlideTransition(
-        position: _slideAnim,
-        child: widget.child,
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF1565C0),
+            Color(0xFF42A5F5),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1565C0)
+                .withValues(alpha: 0.3),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment:
+                  CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${_getGreeting()} 👋',
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 13,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'SK Mobiles ${username[0].toUpperCase()}${username.substring(1)}!',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  "Here's your stock overview",
+                  style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white
+                  .withValues(alpha: 0.2),
+              borderRadius:
+                  BorderRadius.circular(14),
+            ),
+            child: const Icon(Icons.store,
+                color: Colors.white, size: 32),
+          ),
+        ],
       ),
     );
   }
 }
 
-// ─── THEME OPTION ──────────────────────────────────────────────
-class _ThemeOption extends StatelessWidget {
+// ── STAT CARD ──────────────────────────────────────────────────
+class _StatCard extends StatelessWidget {
+  final String title;
+  final String value;
+  final IconData icon;
+  final LinearGradient gradient;
+
+  const _StatCard({
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.gradient,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: gradient,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: gradient.colors.first
+                .withValues(alpha: 0.3),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment:
+            CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: Colors.white, size: 28),
+          const SizedBox(height: 10),
+          Text(
+            value,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 26,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            title,
+            style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 12),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── QUICK ACTION ───────────────────────────────────────────────
+class _QuickAction extends StatelessWidget {
   final IconData icon;
   final String label;
-  final bool isSelected;
+  final Color color;
+  final bool isDark;
   final VoidCallback onTap;
 
-  const _ThemeOption({
+  const _QuickAction({
     required this.icon,
     required this.label,
-    required this.isSelected,
+    required this.color,
+    required this.isDark,
     required this.onTap,
   });
 
@@ -392,187 +848,144 @@ class _ThemeOption extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
         padding: const EdgeInsets.symmetric(
-            horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppTheme.primary.withValues(alpha: 0.1)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: isSelected
-                ? AppTheme.primary
-                : Colors.grey.shade300,
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(icon,
-                color: isSelected
-                    ? AppTheme.primary
-                    : Colors.grey),
-            const SizedBox(width: 12),
-            Text(
-              label,
-              style: TextStyle(
-                fontWeight: isSelected
-                    ? FontWeight.bold
-                    : FontWeight.normal,
-                color: isSelected ? AppTheme.primary : null,
-              ),
-            ),
-            const Spacer(),
-            if (isSelected)
-              const Icon(Icons.check_circle,
-                  color: AppTheme.primary, size: 20),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ─── STAT CARD ─────────────────────────────────────────────────
-class _StatCard extends StatelessWidget {
-  final String title;
-  final String value;
-  final IconData icon;
-  final Color color;
-
-  const _StatCard({
-    required this.title,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: color.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(12),
-          border:
-              Border.all(color: color.withValues(alpha: 0.3)),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: color, size: 28),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-            ),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 12,
-                color: color.withValues(alpha: 0.8),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ─── CATEGORY CARD ─────────────────────────────────────────────
-class _CategoryCard extends StatelessWidget {
-  final CategoryModel category;
-
-  const _CategoryCard({required this.category});
-
-  IconData _getIcon(String? iconName) {
-    switch (iconName) {
-      case 'phone_android':
-        return Icons.phone_android;
-      case 'headphones':
-        return Icons.headphones;
-      case 'earbuds':
-        return Icons.earbuds;
-      case 'electric_bolt':
-        return Icons.electric_bolt;
-      case 'cable':
-        return Icons.cable;
-      case 'smartphone':
-        return Icons.smartphone;
-      default:
-        return Icons.category;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isTemperGlass = category.slug == 'temper-glass';
-    final isDark =
-        Theme.of(context).brightness == Brightness.dark;
-
-    return GestureDetector(
-      onTap: () {
-        if (isTemperGlass) {
-          context.push('/temper-glass');
-        } else {
-          context.push(
-              '/products/${category.id}/${Uri.encodeComponent(category.name)}');
-        }
-      },
-      child: Container(
-        padding: const EdgeInsets.all(16),
+            vertical: 12, horizontal: 6),
         decoration: BoxDecoration(
           color: isDark
-              ? const Color(0xFF1E1E2E)
+              ? color.withValues(alpha: 0.15)
+              : color.withValues(alpha: 0.08),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+              color: color.withValues(alpha: 0.25)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.2),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon,
+                  color: color, size: 20),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 10,
+                color: color,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── CATEGORY CARD ──────────────────────────────────────────────
+class _CategoryCard extends StatelessWidget {
+  final dynamic category;
+  final int index;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _CategoryCard({
+    required this.category,
+    required this.index,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  static const List<List<Color>> _gradients = [
+    [Color(0xFF7B1FA2), Color(0xFFCE93D8)],
+    [Color(0xFF1565C0), Color(0xFF64B5F6)],
+    [Color(0xFFE65100), Color(0xFFFFB74D)],
+    [Color(0xFF2E7D32), Color(0xFF81C784)],
+    [Color(0xFF00695C), Color(0xFF4DB6AC)],
+    [Color(0xFFF57F17), Color(0xFFFFD54F)],
+    [Color(0xFFC62828), Color(0xFFEF9A9A)],
+    [Color(0xFF37474F), Color(0xFF90A4AE)],
+  ];
+
+  static const List<IconData> _icons = [
+    Icons.phone_android,
+    Icons.headphones,
+    Icons.earbuds,
+    Icons.electric_bolt,
+    Icons.cable,
+    Icons.smartphone,
+    Icons.category,
+    Icons.more_horiz,
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final colors =
+        _gradients[index % _gradients.length];
+    final icon = _icons[index % _icons.length];
+    final lowStock = category.lowStockCount ?? 0;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: isDark
+              ? const Color(0xFF1A1A2E)
               : Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
               color: Colors.black
-                  .withValues(alpha: isDark ? 0.3 : 0.06),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+                  .withValues(alpha: 0.06),
+              blurRadius: 10,
+              offset: const Offset(0, 3),
             ),
           ],
         ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment:
+              CrossAxisAlignment.start,
           children: [
             Row(
               mainAxisAlignment:
                   MainAxisAlignment.spaceBetween,
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  padding:
+                      const EdgeInsets.all(10),
                   decoration: BoxDecoration(
-                    color: AppTheme.primary
-                        .withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    gradient: LinearGradient(
+                        colors: colors),
+                    borderRadius:
+                        BorderRadius.circular(12),
                   ),
-                  child: Icon(
-                    _getIcon(category.icon),
-                    color: AppTheme.primary,
-                    size: 22,
-                  ),
+                  child: Icon(icon,
+                      color: Colors.white,
+                      size: 20),
                 ),
-                if (category.lowStockCount > 0)
+                if (lowStock > 0)
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 6, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(
+                            horizontal: 7,
+                            vertical: 3),
                     decoration: BoxDecoration(
                       color: Colors.red,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius:
+                          BorderRadius.circular(10),
                     ),
                     child: Text(
-                      '${category.lowStockCount}',
+                      '$lowStock',
                       style: const TextStyle(
-                          color: Colors.white, fontSize: 10),
+                          color: Colors.white,
+                          fontSize: 10,
+                          fontWeight:
+                              FontWeight.bold),
                     ),
                   ),
               ],
@@ -580,22 +993,103 @@ class _CategoryCard extends StatelessWidget {
             const Spacer(),
             Text(
               category.name,
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 13,
+                color: isDark
+                    ? Colors.white
+                    : Colors.black87,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 3),
             Text(
-              '${category.totalProducts} items · ${category.totalStock} stock',
-              style: const TextStyle(
-                fontSize: 11,
-                color: Colors.grey,
-              ),
+              '${category.productCount ?? 0} items · ${category.totalStock ?? 0} stock',
+              style: TextStyle(
+                  fontSize: 11,
+                  color: isDark
+                      ? Colors.grey.shade400
+                      : Colors.grey.shade500),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── THEME OPTION ───────────────────────────────────────────────
+class _ThemeOption extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool isActive;
+  final Color color;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _ThemeOption({
+    required this.icon,
+    required this.label,
+    required this.isActive,
+    required this.color,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration:
+              const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(
+              vertical: 16),
+          decoration: BoxDecoration(
+            color: isActive
+                ? color.withValues(alpha: 0.15)
+                : isDark
+                    ? const Color(0xFF2A2A3E)
+                    : Colors.grey.shade100,
+            borderRadius:
+                BorderRadius.circular(14),
+            border: Border.all(
+              color: isActive
+                  ? color
+                  : Colors.transparent,
+              width: 2,
+            ),
+          ),
+          child: Column(
+            children: [
+              Icon(
+                icon,
+                color: isActive
+                    ? color
+                    : isDark
+                        ? Colors.grey.shade400
+                        : Colors.grey,
+                size: 26,
+              ),
+              const SizedBox(height: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  color: isActive
+                      ? color
+                      : isDark
+                          ? Colors.grey.shade400
+                          : Colors.grey,
+                  fontSize: 12,
+                  fontWeight: isActive
+                      ? FontWeight.bold
+                      : FontWeight.normal,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

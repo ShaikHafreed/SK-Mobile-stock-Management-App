@@ -6,7 +6,7 @@ class DashboardState {
   final bool isLoading;
   final int totalProducts;
   final int totalStock;
-  final int totalLowStock;
+  final int lowStockCount;
   final List<CategoryModel> categories;
   final String? error;
 
@@ -14,7 +14,7 @@ class DashboardState {
     this.isLoading = false,
     this.totalProducts = 0,
     this.totalStock = 0,
-    this.totalLowStock = 0,
+    this.lowStockCount = 0,
     this.categories = const [],
     this.error,
   });
@@ -23,37 +23,46 @@ class DashboardState {
     bool? isLoading,
     int? totalProducts,
     int? totalStock,
-    int? totalLowStock,
+    int? lowStockCount,
     List<CategoryModel>? categories,
     String? error,
   }) {
     return DashboardState(
       isLoading: isLoading ?? this.isLoading,
-      totalProducts: totalProducts ?? this.totalProducts,
+      totalProducts:
+          totalProducts ?? this.totalProducts,
       totalStock: totalStock ?? this.totalStock,
-      totalLowStock: totalLowStock ?? this.totalLowStock,
+      lowStockCount:
+          lowStockCount ?? this.lowStockCount,
       categories: categories ?? this.categories,
       error: error,
     );
   }
 }
 
-class DashboardNotifier extends StateNotifier<DashboardState> {
+class DashboardNotifier
+    extends StateNotifier<DashboardState> {
   DashboardNotifier() : super(DashboardState());
 
   Future<void> loadStats() async {
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(
+        isLoading: true, error: null);
     try {
-      final response = await ApiClient().getDashboardStats();
+      final response =
+          await ApiClient().getDashboardStats();
       final data = response.data;
       state = state.copyWith(
         isLoading: false,
-        totalProducts: data['total_products'] ?? 0,
+        totalProducts:
+            data['total_products'] ?? 0,
         totalStock: data['total_stock'] ?? 0,
-        totalLowStock: data['total_low_stock'] ?? 0,
-        categories: (data['categories'] as List)
-            .map((c) => CategoryModel.fromJson(c))
-            .toList(),
+        lowStockCount:
+            data['total_low_stock'] ?? 0,
+        categories:
+            (data['categories'] as List? ?? [])
+                .map((c) =>
+                    CategoryModel.fromJson(c))
+                .toList(),
       );
     } catch (e) {
       state = state.copyWith(
@@ -64,7 +73,4 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
   }
 }
 
-final dashboardProvider =
-    StateNotifierProvider<DashboardNotifier, DashboardState>((ref) {
-  return DashboardNotifier();
-});
+final dashboardProvider = StateNotifierProvider<DashboardNotifier, DashboardState>((ref) => DashboardNotifier());

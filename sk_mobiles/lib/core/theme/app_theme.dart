@@ -14,8 +14,7 @@ class AppTheme {
           seedColor: primary,
           brightness: Brightness.light,
         ),
-        scaffoldBackgroundColor:
-            const Color(0xFFF0F4FF),
+        scaffoldBackgroundColor: const Color(0xFFF0F4FF),
         appBarTheme: const AppBarTheme(
           backgroundColor: primary,
           foregroundColor: Colors.white,
@@ -41,16 +40,15 @@ class AppTheme {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
-            padding: const EdgeInsets.symmetric(
-                vertical: 14, horizontal: 24),
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 24),
           ),
         ),
         inputDecorationTheme: InputDecorationTheme(
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16, vertical: 14),
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         ),
       );
 
@@ -60,8 +58,7 @@ class AppTheme {
           seedColor: primary,
           brightness: Brightness.dark,
         ),
-        scaffoldBackgroundColor:
-            const Color(0xFF0A0A1A),
+        scaffoldBackgroundColor: const Color(0xFF0A0A1A),
         appBarTheme: const AppBarTheme(
           backgroundColor: Color(0xFF0D1B2A),
           foregroundColor: Colors.white,

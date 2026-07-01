@@ -29,7 +29,8 @@ class _AddProductScreenState
   final _modelCtrl = TextEditingController();
   final _nameCtrl = TextEditingController();
   final _wattsCtrl = TextEditingController();
-  final _qtyCtrl = TextEditingController(text: '0');
+  final _qtyCtrl =
+      TextEditingController(text: '0');
   final _notesCtrl = TextEditingController();
   String? _selectedCableType;
   bool _isLoading = false;
@@ -39,19 +40,26 @@ class _AddProductScreenState
   final List<String> _cableTypes = [
     'Type-C',
     'Lightning',
-    'Micro USB'
+    'Micro USB',
   ];
   final List<String> _wattOptions = [
-    '18W', '20W', '25W', '33W', '45W', '65W', '100W'
+    '18W', '20W', '25W', '33W',
+    '45W', '65W', '100W',
   ];
 
-  bool get _isMobileCovers =>
-      widget.categoryName.toLowerCase().contains('cover');
+  bool get _isMobileCovers => widget.categoryName
+      .toLowerCase()
+      .contains('cover');
   bool get _isCharger =>
-      widget.categoryName.toLowerCase().contains('charger') &&
-      !widget.categoryName.toLowerCase().contains('cable');
-  bool get _isCable =>
-      widget.categoryName.toLowerCase().contains('cable');
+      widget.categoryName
+          .toLowerCase()
+          .contains('charger') &&
+      !widget.categoryName
+          .toLowerCase()
+          .contains('cable');
+  bool get _isCable => widget.categoryName
+      .toLowerCase()
+      .contains('cable');
 
   @override
   void dispose() {
@@ -64,7 +72,8 @@ class _AddProductScreenState
     super.dispose();
   }
 
-  Future<void> _pickImage(ImageSource source) async {
+  Future<void> _pickImage(
+      ImageSource source) async {
     try {
       final picked = await _picker.pickImage(
         source: source,
@@ -73,12 +82,15 @@ class _AddProductScreenState
         imageQuality: 85,
       );
       if (picked != null) {
-        setState(() => _selectedImage = File(picked.path));
+        setState(
+            () => _selectedImage = File(picked.path));
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not pick image')),
+          const SnackBar(
+              content:
+                  Text('Could not pick image')),
         );
       }
     }
@@ -90,7 +102,8 @@ class _AddProductScreenState
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
+          color: Theme.of(context)
+              .scaffoldBackgroundColor,
           borderRadius: const BorderRadius.vertical(
               top: Radius.circular(20)),
         ),
@@ -103,14 +116,16 @@ class _AddProductScreenState
               height: 4,
               decoration: BoxDecoration(
                 color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(2),
+                borderRadius:
+                    BorderRadius.circular(2),
               ),
             ),
             const SizedBox(height: 20),
             const Text(
               'Select Image',
               style: TextStyle(
-                  fontSize: 18, fontWeight: FontWeight.bold),
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
             Row(
@@ -122,7 +137,8 @@ class _AddProductScreenState
                     color: AppTheme.primary,
                     onTap: () {
                       Navigator.pop(ctx);
-                      _pickImage(ImageSource.camera);
+                      _pickImage(
+                          ImageSource.camera);
                     },
                   ),
                 ),
@@ -134,23 +150,28 @@ class _AddProductScreenState
                     color: Colors.purple,
                     onTap: () {
                       Navigator.pop(ctx);
-                      _pickImage(ImageSource.gallery);
+                      _pickImage(
+                          ImageSource.gallery);
                     },
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            if (_selectedImage != null)
+            if (_selectedImage != null) ...[
+              const SizedBox(height: 12),
               TextButton.icon(
                 onPressed: () {
-                  setState(() => _selectedImage = null);
+                  setState(
+                      () => _selectedImage = null);
                   Navigator.pop(ctx);
                 },
-                icon: const Icon(Icons.delete, color: Colors.red),
+                icon: const Icon(Icons.delete,
+                    color: Colors.red),
                 label: const Text('Remove Image',
-                    style: TextStyle(color: Colors.red)),
+                    style: TextStyle(
+                        color: Colors.red)),
               ),
+            ],
             const SizedBox(height: 8),
           ],
         ),
@@ -158,7 +179,6 @@ class _AddProductScreenState
     );
   }
 
-  // ── FIXED: Uses correct new product ID ────────────────────
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
@@ -166,28 +186,35 @@ class _AddProductScreenState
     final data = <String, dynamic>{
       'category_id': widget.categoryId,
       'brand': _brandCtrl.text.trim(),
-      'quantity': int.tryParse(_qtyCtrl.text) ?? 0,
+      'quantity':
+          int.tryParse(_qtyCtrl.text) ?? 0,
       'notes': _notesCtrl.text.trim(),
     };
 
     if (_isMobileCovers) {
-      data['mobile_model'] = _modelCtrl.text.trim();
+      data['mobile_model'] =
+          _modelCtrl.text.trim();
     } else if (_isCharger) {
       data['watts'] = _wattsCtrl.text.trim();
     } else if (_isCable) {
-      data['cable_type'] = _selectedCableType ?? '';
+      data['cable_type'] =
+          _selectedCableType ?? '';
     } else {
-      data['product_name'] = _nameCtrl.text.trim();
+      data['product_name'] =
+          _nameCtrl.text.trim();
     }
 
-    // Step 1: Add product and get its NEW ID
-    final newProductId =
-        await ref.read(productsProvider.notifier).addProduct(data);
+    // Step 1: Add product → get new ID
+    final newProductId = await ref
+        .read(productsProvider.notifier)
+        .addProduct(data);
 
-    // Step 2: Upload image to the CORRECT new product
-    if (newProductId != null && _selectedImage != null) {
+    // Step 2: Upload image to correct product
+    if (newProductId != null &&
+        _selectedImage != null) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        ScaffoldMessenger.of(context)
+            .showSnackBar(
           const SnackBar(
             content: Row(
               children: [
@@ -203,28 +230,27 @@ class _AddProductScreenState
                 Text('Uploading image...'),
               ],
             ),
-            duration: Duration(seconds: 15),
+            duration: Duration(seconds: 20),
             behavior: SnackBarBehavior.floating,
           ),
         );
       }
 
-      // Upload to correct product ID
-      final imageUrl = await ImageUploadHelper.uploadProductImage(
+      final imageUrl = await ImageUploadHelper
+          .uploadProductImage(
         _selectedImage!,
         newProductId,
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context)
+            .hideCurrentSnackBar();
       }
 
-      // Reload to show image
-      if (imageUrl != null) {
-        await ref
-            .read(productsProvider.notifier)
-            .loadProducts(widget.categoryId);
-      }
+      // Force reload after image upload
+      await ref
+          .read(productsProvider.notifier)
+          .loadProducts(widget.categoryId);
     }
 
     setState(() => _isLoading = false);
@@ -240,7 +266,8 @@ class _AddProductScreenState
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10)),
+              borderRadius:
+                  BorderRadius.circular(10)),
         ),
       );
       context.pop();
@@ -257,26 +284,40 @@ class _AddProductScreenState
 
   @override
   Widget build(BuildContext context) {
+    final isDark =
+        Theme.of(context).brightness ==
+            Brightness.dark;
+
     return Scaffold(
+      backgroundColor: isDark
+          ? const Color(0xFF0A0A1A)
+          : const Color(0xFFF0F4FF),
       appBar: AppBar(
-        title: Text('Add to ${widget.categoryName}'),
+        title:
+            Text('Add to ${widget.categoryName}'),
+        backgroundColor: AppTheme.primary,
+        foregroundColor: Colors.white,
       ),
       body: Form(
         key: _formKey,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            crossAxisAlignment:
+                CrossAxisAlignment.stretch,
             children: [
-              // ── IMAGE PICKER ──────────────────────────────
+              // ── IMAGE PICKER ──────────────────
               GestureDetector(
                 onTap: _showImagePicker,
                 child: Container(
                   height: 180,
                   decoration: BoxDecoration(
-                    color:
-                        AppTheme.primary.withValues(alpha: 0.05),
-                    borderRadius: BorderRadius.circular(16),
+                    color: isDark
+                        ? const Color(0xFF1A1A2E)
+                        : AppTheme.primary
+                            .withValues(alpha: 0.05),
+                    borderRadius:
+                        BorderRadius.circular(16),
                     border: Border.all(
                       color: AppTheme.primary
                           .withValues(alpha: 0.3),
@@ -288,11 +329,14 @@ class _AddProductScreenState
                           children: [
                             ClipRRect(
                               borderRadius:
-                                  BorderRadius.circular(14),
+                                  BorderRadius.circular(
+                                      14),
                               child: Image.file(
                                 _selectedImage!,
-                                width: double.infinity,
-                                height: double.infinity,
+                                width:
+                                    double.infinity,
+                                height:
+                                    double.infinity,
                                 fit: BoxFit.cover,
                               ),
                             ),
@@ -300,17 +344,25 @@ class _AddProductScreenState
                               top: 8,
                               right: 8,
                               child: GestureDetector(
-                                onTap: () => setState(
-                                    () => _selectedImage = null),
+                                onTap: () =>
+                                    setState(() =>
+                                        _selectedImage =
+                                            null),
                                 child: Container(
                                   padding:
-                                      const EdgeInsets.all(6),
-                                  decoration: const BoxDecoration(
-                                    color: Colors.red,
-                                    shape: BoxShape.circle,
+                                      const EdgeInsets
+                                          .all(6),
+                                  decoration:
+                                      const BoxDecoration(
+                                    color:
+                                        Colors.red,
+                                    shape: BoxShape
+                                        .circle,
                                   ),
-                                  child: const Icon(Icons.close,
-                                      color: Colors.white,
+                                  child: const Icon(
+                                      Icons.close,
+                                      color:
+                                          Colors.white,
                                       size: 16),
                                 ),
                               ),
@@ -320,24 +372,35 @@ class _AddProductScreenState
                               right: 8,
                               child: Container(
                                 padding:
-                                    const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: Colors.black54,
+                                    const EdgeInsets
+                                        .symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
+                                ),
+                                decoration:
+                                    BoxDecoration(
+                                  color:
+                                      Colors.black54,
                                   borderRadius:
-                                      BorderRadius.circular(8),
+                                      BorderRadius
+                                          .circular(8),
                                 ),
                                 child: const Row(
                                   children: [
                                     Icon(Icons.edit,
-                                        color: Colors.white,
+                                        color: Colors
+                                            .white,
                                         size: 14),
-                                    SizedBox(width: 4),
+                                    SizedBox(
+                                        width: 4),
                                     Text('Change',
-                                        style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 12)),
+                                        style:
+                                            TextStyle(
+                                          color: Colors
+                                              .white,
+                                          fontSize:
+                                              12,
+                                        )),
                                   ],
                                 ),
                               ),
@@ -346,35 +409,49 @@ class _AddProductScreenState
                         )
                       : Column(
                           mainAxisAlignment:
-                              MainAxisAlignment.center,
+                              MainAxisAlignment
+                                  .center,
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: AppTheme.primary
-                                    .withValues(alpha: 0.1),
-                                shape: BoxShape.circle,
+                              padding:
+                                  const EdgeInsets
+                                      .all(16),
+                              decoration:
+                                  BoxDecoration(
+                                color:
+                                    AppTheme.primary
+                                        .withValues(
+                                            alpha:
+                                                0.1),
+                                shape:
+                                    BoxShape.circle,
                               ),
                               child: const Icon(
-                                Icons.add_photo_alternate_outlined,
+                                Icons
+                                    .add_photo_alternate_outlined,
                                 size: 36,
-                                color: AppTheme.primary,
+                                color:
+                                    AppTheme.primary,
                               ),
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(
+                                height: 12),
                             const Text(
                               'Add Product Image',
                               style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color: AppTheme.primary,
+                                fontWeight:
+                                    FontWeight.w600,
+                                color:
+                                    AppTheme.primary,
                                 fontSize: 15,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              'Tap to choose from Camera or Gallery',
+                              'Camera or Gallery',
                               style: TextStyle(
-                                  color: Colors.grey.shade500,
+                                  color: Colors
+                                      .grey.shade500,
                                   fontSize: 12),
                             ),
                           ],
@@ -383,39 +460,73 @@ class _AddProductScreenState
               ),
               const SizedBox(height: 20),
 
-              // ── BRAND ─────────────────────────────────────
+              // ── BRAND ─────────────────────────
               TextFormField(
                 controller: _brandCtrl,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Brand *',
-                  prefixIcon: Icon(Icons.business),
-                  hintText: 'e.g. Samsung, Apple, MI',
+                  prefixIcon:
+                      const Icon(Icons.business),
+                  hintText:
+                      'e.g. Samsung, Apple, MI',
+                  filled: true,
+                  fillColor: isDark
+                      ? const Color(0xFF1A1A2E)
+                      : Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius:
+                        BorderRadius.circular(12),
+                  ),
                 ),
-                validator: (v) =>
-                    v!.isEmpty ? 'Brand is required' : null,
+                validator: (v) => v!.isEmpty
+                    ? 'Brand is required'
+                    : null,
               ),
               const SizedBox(height: 14),
 
-              // ── CATEGORY SPECIFIC FIELDS ──────────────────
+              // ── CATEGORY SPECIFIC ─────────────
               if (_isMobileCovers) ...[
                 TextFormField(
                   controller: _modelCtrl,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Mobile Model *',
-                    prefixIcon: Icon(Icons.phone_android),
-                    hintText: 'e.g. Samsung S24, iPhone 15',
+                    prefixIcon: const Icon(
+                        Icons.phone_android),
+                    hintText:
+                        'e.g. Samsung S24, iPhone 15',
+                    filled: true,
+                    fillColor: isDark
+                        ? const Color(0xFF1A1A2E)
+                        : Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius:
+                          BorderRadius.circular(12),
+                    ),
                   ),
-                  validator: (v) =>
-                      v!.isEmpty ? 'Mobile model required' : null,
+                  validator: (v) => v!.isEmpty
+                      ? 'Mobile model required'
+                      : null,
                 ),
               ] else if (_isCharger) ...[
                 DropdownButtonFormField<String>(
                   value: _wattsCtrl.text.isEmpty
                       ? null
                       : _wattsCtrl.text,
-                  decoration: const InputDecoration(
+                  dropdownColor: isDark
+                      ? const Color(0xFF1A1A2E)
+                      : Colors.white,
+                  decoration: InputDecoration(
                     labelText: 'Wattage *',
-                    prefixIcon: Icon(Icons.electric_bolt),
+                    prefixIcon: const Icon(
+                        Icons.electric_bolt),
+                    filled: true,
+                    fillColor: isDark
+                        ? const Color(0xFF1A1A2E)
+                        : Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius:
+                          BorderRadius.circular(12),
+                    ),
                   ),
                   items: _wattOptions
                       .map((w) => DropdownMenuItem(
@@ -423,17 +534,30 @@ class _AddProductScreenState
                             child: Text(w),
                           ))
                       .toList(),
-                  onChanged: (v) =>
-                      setState(() => _wattsCtrl.text = v ?? ''),
-                  validator: (v) =>
-                      v == null ? 'Select wattage' : null,
+                  onChanged: (v) => setState(
+                      () => _wattsCtrl.text = v ?? ''),
+                  validator: (v) => v == null
+                      ? 'Select wattage'
+                      : null,
                 ),
               ] else if (_isCable) ...[
                 DropdownButtonFormField<String>(
                   value: _selectedCableType,
-                  decoration: const InputDecoration(
+                  dropdownColor: isDark
+                      ? const Color(0xFF1A1A2E)
+                      : Colors.white,
+                  decoration: InputDecoration(
                     labelText: 'Cable Type *',
-                    prefixIcon: Icon(Icons.cable),
+                    prefixIcon:
+                        const Icon(Icons.cable),
+                    filled: true,
+                    fillColor: isDark
+                        ? const Color(0xFF1A1A2E)
+                        : Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius:
+                          BorderRadius.circular(12),
+                    ),
                   ),
                   items: _cableTypes
                       .map((t) => DropdownMenuItem(
@@ -441,38 +565,59 @@ class _AddProductScreenState
                             child: Text(t),
                           ))
                       .toList(),
-                  onChanged: (v) =>
-                      setState(() => _selectedCableType = v),
-                  validator: (v) =>
-                      v == null ? 'Select cable type' : null,
+                  onChanged: (v) => setState(
+                      () => _selectedCableType = v),
+                  validator: (v) => v == null
+                      ? 'Select cable type'
+                      : null,
                 ),
               ] else ...[
                 TextFormField(
                   controller: _nameCtrl,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     labelText: 'Product Name',
-                    prefixIcon: Icon(Icons.inventory),
+                    prefixIcon:
+                        const Icon(Icons.inventory),
+                    filled: true,
+                    fillColor: isDark
+                        ? const Color(0xFF1A1A2E)
+                        : Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius:
+                          BorderRadius.circular(12),
+                    ),
                   ),
                 ),
               ],
               const SizedBox(height: 14),
 
-              // ── QUANTITY ──────────────────────────────────
+              // ── QUANTITY ──────────────────────
               Row(
                 children: [
                   Expanded(
                     child: TextFormField(
                       controller: _qtyCtrl,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
+                      keyboardType:
+                          TextInputType.number,
+                      decoration: InputDecoration(
                         labelText: 'Quantity *',
-                        prefixIcon: Icon(Icons.numbers),
+                        prefixIcon: const Icon(
+                            Icons.numbers),
+                        filled: true,
+                        fillColor: isDark
+                            ? const Color(0xFF1A1A2E)
+                            : Colors.white,
+                        border: OutlineInputBorder(
+                          borderRadius:
+                              BorderRadius.circular(
+                                  12),
+                        ),
                       ),
                       validator: (v) {
-                        if (v!.isEmpty) return 'Required';
-                        if (int.tryParse(v) == null) {
+                        if (v!.isEmpty)
+                          return 'Required';
+                        if (int.tryParse(v) == null)
                           return 'Invalid number';
-                        }
                         return null;
                       },
                     ),
@@ -484,10 +629,12 @@ class _AddProductScreenState
                         icon: Icons.add,
                         color: AppTheme.primary,
                         onTap: () {
-                          final v =
-                              int.tryParse(_qtyCtrl.text) ?? 0;
-                          setState(
-                              () => _qtyCtrl.text = '${v + 1}');
+                          final v = int.tryParse(
+                                  _qtyCtrl.text) ??
+                              0;
+                          setState(() =>
+                              _qtyCtrl.text =
+                                  '${v + 1}');
                         },
                       ),
                       const SizedBox(height: 6),
@@ -495,11 +642,13 @@ class _AddProductScreenState
                         icon: Icons.remove,
                         color: Colors.grey,
                         onTap: () {
-                          final v =
-                              int.tryParse(_qtyCtrl.text) ?? 0;
+                          final v = int.tryParse(
+                                  _qtyCtrl.text) ??
+                              0;
                           if (v > 0) {
-                            setState(
-                                () => _qtyCtrl.text = '${v - 1}');
+                            setState(() =>
+                                _qtyCtrl.text =
+                                    '${v - 1}');
                           }
                         },
                       ),
@@ -509,34 +658,47 @@ class _AddProductScreenState
               ),
               const SizedBox(height: 14),
 
-              // ── NOTES ─────────────────────────────────────
+              // ── NOTES ─────────────────────────
               TextFormField(
                 controller: _notesCtrl,
                 maxLines: 3,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Notes (optional)',
-                  prefixIcon: Icon(Icons.note),
+                  prefixIcon:
+                      const Icon(Icons.note),
                   hintText: 'Any additional notes...',
                   alignLabelWithHint: true,
+                  filled: true,
+                  fillColor: isDark
+                      ? const Color(0xFF1A1A2E)
+                      : Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius:
+                        BorderRadius.circular(12),
+                  ),
                 ),
               ),
               const SizedBox(height: 32),
 
-              // ── SAVE BUTTON ───────────────────────────────
+              // ── SAVE BUTTON ───────────────────
               ElevatedButton(
                 onPressed: _isLoading ? null : _save,
                 style: ElevatedButton.styleFrom(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 16),
+                  backgroundColor: AppTheme.primary,
+                  foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius:
+                        BorderRadius.circular(12),
                   ),
                 ),
                 child: _isLoading
                     ? const SizedBox(
                         height: 22,
                         width: 22,
-                        child: CircularProgressIndicator(
+                        child:
+                            CircularProgressIndicator(
                           color: Colors.white,
                           strokeWidth: 2.5,
                         ),
@@ -567,7 +729,7 @@ class _AddProductScreenState
   }
 }
 
-// ─── IMAGE SOURCE BUTTON ───────────────────────────────────────
+// ── IMAGE SOURCE BUTTON ────────────────────────────────────────
 class _ImageSourceButton extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -586,12 +748,13 @@ class _ImageSourceButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 20),
+        padding: const EdgeInsets.symmetric(
+            vertical: 20),
         decoration: BoxDecoration(
           color: color.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          border:
-              Border.all(color: color.withValues(alpha: 0.3)),
+          border: Border.all(
+              color: color.withValues(alpha: 0.3)),
         ),
         child: Column(
           children: [
@@ -608,7 +771,7 @@ class _ImageSourceButton extends StatelessWidget {
   }
 }
 
-// ─── SMALL QTY BUTTON ─────────────────────────────────────────
+// ── SMALL QTY BUTTON ──────────────────────────────────────────
 class _SmallQtyBtn extends StatelessWidget {
   final IconData icon;
   final Color color;

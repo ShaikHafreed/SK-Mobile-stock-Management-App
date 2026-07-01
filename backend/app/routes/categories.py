@@ -1,108 +1,115 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, jsonify, request
 from flask_jwt_extended import jwt_required
 from app import db
 from app.models.category import Category
-from app.utils.auth_helpers import admin_required, log_activity, get_current_user
+from app.models.product import Product
+from app.utils.auth_helpers import (
+    admin_required, get_current_user, log_activity
+)
 
 categories_bp = Blueprint('categories', __name__)
 
 
-# ─── GET ALL CATEGORIES ───────────────────────────────────────────────────────
 @categories_bp.route('/', methods=['GET'])
 @jwt_required()
 def get_categories():
-    categories = Category.query.filter_by(is_active=True).all()
+    categories = Category.query.filter_by(
+        is_active=True).all()
+    result = []
+    for cat in categories:
+        cat_dict = cat.to_dict()
+        # Add product counts
+        products = Product.query.filter_by(
+            category_id=cat.id,
+            is_active=True).all()
+        cat_dict['product_count'] = len(products)
+        cat_dict['total_stock'] = sum(
+            p.quantity for p in products)
+        cat_dict['low_stock_count'] = sum(
+            1 for p in products
+            if p.quantity < 3)
+        result.append(cat_dict)
     return jsonify({
-        'categories': [c.to_dict() for c in categories]
+        'categories': result,
+        'total': len(result)
     }), 200
 
 
-# ─── ADD CUSTOM CATEGORY ──────────────────────────────────────────────────────
+@categories_bp.route('/<int:cat_id>',
+                     methods=['GET'])
+@jwt_required()
+def get_category(cat_id):
+    cat = Category.query.get_or_404(cat_id)
+    return jsonify(
+        {'category': cat.to_dict()}), 200
+
+
 @categories_bp.route('/', methods=['POST'])
 @admin_required
-def add_category():
+def create_category():
     current_user = get_current_user()
     data = request.get_json()
-
     if not data.get('name'):
-        return jsonify({'error': 'Category name is required'}), 400
-
-    slug = data['name'].lower().replace(' ', '-')
-
-    if Category.query.filter_by(slug=slug).first():
-        return jsonify({'error': 'Category already exists'}), 409
-
-    category = Category(
+        return jsonify(
+            {'error': 'Name required'}), 400
+    cat = Category(
         name=data['name'],
-        slug=slug,
-        icon=data.get('icon', 'category'),
-        image_url=data.get('image_url', ''),
-        is_default=False
+        description=data.get('description', ''),
     )
-
-    db.session.add(category)
+    db.session.add(cat)
     db.session.commit()
-
     log_activity(
         current_user.id,
-        f"{current_user.username} created category {category.name}",
+        f"{current_user.username} created "
+        f"category {cat.name}",
         module='categories',
-        record_id=category.id
+        record_id=cat.id
     )
-
     return jsonify({
-        'message': 'Category created successfully',
-        'category': category.to_dict()
+        'message': 'Category created',
+        'category': cat.to_dict()
     }), 201
 
 
-# ─── UPDATE CATEGORY ──────────────────────────────────────────────────────────
-@categories_bp.route('/<int:category_id>', methods=['PUT'])
+@categories_bp.route('/<int:cat_id>',
+                     methods=['PUT'])
 @admin_required
-def update_category(category_id):
+def update_category(cat_id):
     current_user = get_current_user()
-    category = Category.query.get_or_404(category_id)
+    cat = Category.query.get_or_404(cat_id)
     data = request.get_json()
-
     if 'name' in data:
-        category.name = data['name']
-    if 'icon' in data:
-        category.icon = data['icon']
-    if 'image_url' in data:
-        category.image_url = data['image_url']
-
+        cat.name = data['name']
+    if 'description' in data:
+        cat.description = data['description']
     db.session.commit()
-
     log_activity(
         current_user.id,
-        f"{current_user.username} updated category {category.name}",
+        f"{current_user.username} updated "
+        f"category {cat.name}",
         module='categories',
-        record_id=category.id
+        record_id=cat.id
     )
-
     return jsonify({
         'message': 'Category updated',
-        'category': category.to_dict()
+        'category': cat.to_dict()
     }), 200
 
 
-# ─── DELETE CATEGORY (Admin only, non-default) ────────────────────────────────
-@categories_bp.route('/<int:category_id>', methods=['DELETE'])
+@categories_bp.route('/<int:cat_id>',
+                     methods=['DELETE'])
 @admin_required
-def delete_category(category_id):
+def delete_category(cat_id):
     current_user = get_current_user()
-    category = Category.query.get_or_404(category_id)
-
-    if category.is_default:
-        return jsonify({'error': 'Cannot delete default categories'}), 400
-
-    category.is_active = False
+    cat = Category.query.get_or_404(cat_id)
+    cat.is_active = False
     db.session.commit()
-
     log_activity(
         current_user.id,
-        f"{current_user.username} deleted category {category.name}",
-        module='categories'
+        f"{current_user.username} deleted "
+        f"category {cat.name}",
+        module='categories',
+        record_id=cat.id
     )
-
-    return jsonify({'message': 'Category deleted successfully'}), 200
+    return jsonify(
+        {'message': 'Category deleted'}), 200

@@ -1,6 +1,5 @@
-import os
 import uuid
-from flask import Blueprint, request, jsonify, send_file
+from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required
 from app import db
 from app.models.product import Product
@@ -13,6 +12,7 @@ from app.utils.auth_helpers import (
 products_bp = Blueprint('products', __name__)
 
 
+# ─── GET ALL PRODUCTS ─────────────────────────────────────────
 @products_bp.route('/', methods=['GET'])
 @jwt_required()
 def get_products():
@@ -30,6 +30,7 @@ def get_products():
     }), 200
 
 
+# ─── GET SINGLE PRODUCT ───────────────────────────────────────
 @products_bp.route('/<int:product_id>', methods=['GET'])
 @jwt_required()
 def get_product(product_id):
@@ -37,16 +38,20 @@ def get_product(product_id):
     return jsonify({'product': product.to_dict()}), 200
 
 
+# ─── ADD PRODUCT ──────────────────────────────────────────────
 @products_bp.route('/', methods=['POST'])
 @staff_or_admin_required
 def add_product():
     current_user = get_current_user()
     data = request.get_json()
+
     if not data.get('category_id'):
         return jsonify({'error': 'category_id is required'}), 400
+
     category = Category.query.get(data['category_id'])
     if not category:
         return jsonify({'error': 'Category not found'}), 404
+
     product = Product(
         category_id=data['category_id'],
         brand=data.get('brand', ''),
@@ -58,26 +63,33 @@ def add_product():
         notes=data.get('notes', ''),
         image_url=data.get('image_url', '')
     )
+
     db.session.add(product)
     db.session.commit()
+
     log_activity(
         current_user.id,
-        f"{current_user.username} added {product.brand} {product.product_name} in {category.name}",
+        f"{current_user.username} added {product.brand} "
+        f"{product.product_name} in {category.name}",
         module='products',
         record_id=product.id
     )
+
     return jsonify({
         'message': 'Product added successfully',
-        'product': product.to_dict()
+        'product': product.to_dict(),
+        'product_id': product.id
     }), 201
 
 
+# ─── UPDATE PRODUCT ───────────────────────────────────────────
 @products_bp.route('/<int:product_id>', methods=['PUT'])
 @staff_or_admin_required
 def update_product(product_id):
     current_user = get_current_user()
     product = Product.query.get_or_404(product_id)
     data = request.get_json()
+
     if 'brand' in data:
         product.brand = data['brand']
     if 'product_name' in data:
@@ -94,58 +106,73 @@ def update_product(product_id):
         product.notes = data['notes']
     if 'image_url' in data:
         product.image_url = data['image_url']
+
     db.session.commit()
+
     log_activity(
         current_user.id,
-        f"{current_user.username} updated {product.brand} {product.product_name}",
+        f"{current_user.username} updated "
+        f"{product.brand} {product.product_name}",
         module='products',
         record_id=product.id
     )
+
     return jsonify({
         'message': 'Product updated successfully',
         'product': product.to_dict()
     }), 200
 
 
+# ─── UPDATE QUANTITY ──────────────────────────────────────────
 @products_bp.route('/<int:product_id>/quantity', methods=['PATCH'])
 @staff_or_admin_required
 def update_quantity(product_id):
     current_user = get_current_user()
     product = Product.query.get_or_404(product_id)
     data = request.get_json()
+
     if 'quantity' not in data:
         return jsonify({'error': 'quantity is required'}), 400
+
     old_qty = product.quantity
     product.quantity = data['quantity']
     db.session.commit()
+
     log_activity(
         current_user.id,
-        f"{current_user.username} updated quantity of {product.brand} from {old_qty} to {product.quantity}",
+        f"{current_user.username} updated quantity of "
+        f"{product.brand} from {old_qty} to {product.quantity}",
         module='products',
         record_id=product.id
     )
+
     return jsonify({
         'message': 'Quantity updated',
         'product': product.to_dict()
     }), 200
 
 
+# ─── DELETE PRODUCT ───────────────────────────────────────────
 @products_bp.route('/<int:product_id>', methods=['DELETE'])
-@admin_required
+@staff_or_admin_required
 def delete_product(product_id):
     current_user = get_current_user()
     product = Product.query.get_or_404(product_id)
     product.is_active = False
     db.session.commit()
+
     log_activity(
         current_user.id,
-        f"{current_user.username} deleted {product.brand} {product.product_name}",
+        f"{current_user.username} deleted "
+        f"{product.brand} {product.product_name}",
         module='products',
         record_id=product.id
     )
+
     return jsonify({'message': 'Product deleted successfully'}), 200
 
 
+# ─── DASHBOARD STATS ──────────────────────────────────────────
 @products_bp.route('/dashboard/stats', methods=['GET'])
 @jwt_required()
 def dashboard_stats():
@@ -158,6 +185,7 @@ def dashboard_stats():
     total_stock = db.session.query(
         db.func.sum(Product.quantity)
     ).filter_by(is_active=True).scalar() or 0
+
     return jsonify({
         'total_products': total_products,
         'total_stock': total_stock,
@@ -166,7 +194,7 @@ def dashboard_stats():
     }), 200
 
 
-# ─── UPLOAD IMAGE TO SUPABASE ─────────────────────────────────
+# ─── UPLOAD PRODUCT IMAGE ─────────────────────────────────────
 @products_bp.route('/<int:product_id>/upload-image', methods=['POST'])
 @staff_or_admin_required
 def upload_product_image(product_id):
@@ -193,14 +221,11 @@ def upload_product_image(product_id):
         supabase_key = os.getenv('SUPABASE_SECRET_KEY')
         supabase = create_client(supabase_url, supabase_key)
 
-        # Generate unique filename
+        # Unique filename using product_id
         filename = f"products/product_{product_id}_{uuid.uuid4().hex[:8]}.{ext}"
-
-        # Read file bytes
         file_bytes = file.read()
 
-        # Upload to Supabase Storage
-        result = supabase.storage.from_('sk-mobiles-images').upload(
+        supabase.storage.from_('sk-mobiles-images').upload(
             path=filename,
             file=file_bytes,
             file_options={
@@ -209,16 +234,17 @@ def upload_product_image(product_id):
             }
         )
 
-        # Get public URL
-        public_url = supabase.storage.from_('sk-mobiles-images').get_public_url(filename)
+        public_url = supabase.storage.from_(
+            'sk-mobiles-images'
+        ).get_public_url(filename)
 
-        # Update product
         product.image_url = public_url
         db.session.commit()
 
         log_activity(
             current_user.id,
-            f"{current_user.username} uploaded image for {product.brand} {product.product_name}",
+            f"{current_user.username} uploaded image for "
+            f"{product.brand} {product.product_name}",
             module='products',
             record_id=product.id
         )
