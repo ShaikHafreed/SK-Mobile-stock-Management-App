@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../dashboard/providers/dashboard_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/providers/theme_provider.dart';
 
@@ -11,10 +12,12 @@ class ProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
+    final dashState = ref.watch(dashboardProvider);
     final themeMode = ref.watch(themeProvider);
     final user = authState.user;
     final isDark =
-        Theme.of(context).brightness == Brightness.dark;
+        Theme.of(context).brightness ==
+            Brightness.dark;
 
     return Scaffold(
       backgroundColor: isDark
@@ -29,7 +32,7 @@ class ProfileScreen extends ConsumerWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            // ── PROFILE HEADER ──────────────────
+            // ── PROFILE HEADER ────────────────
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(24),
@@ -64,7 +67,8 @@ class ProfileScreen extends ConsumerWidget {
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: Colors.white
-                            .withValues(alpha: 0.5),
+                            .withValues(
+                                alpha: 0.5),
                         width: 2,
                       ),
                     ),
@@ -96,15 +100,16 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 6),
                   Container(
-                    padding:
-                        const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 5),
+                    padding: const EdgeInsets
+                        .symmetric(
+                        horizontal: 14,
+                        vertical: 5),
                     decoration: BoxDecoration(
                       color: Colors.white
                           .withValues(alpha: 0.2),
                       borderRadius:
-                          BorderRadius.circular(20),
+                          BorderRadius.circular(
+                              20),
                     ),
                     child: Text(
                       user?.isAdmin == true
@@ -113,16 +118,43 @@ class ProfileScreen extends ConsumerWidget {
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 13,
-                        fontWeight: FontWeight.w500,
+                        fontWeight:
+                            FontWeight.w500,
                       ),
                     ),
+                  ),
+                  const SizedBox(height: 18),
+
+                  // ── LIVE STATS ROW ────────────
+                  Row(
+                    children: [
+                      _HeaderStat(
+                        label: 'Products',
+                        value:
+                            '${dashState.totalProducts}',
+                        icon: Icons.inventory_2,
+                      ),
+                      _HeaderStat(
+                        label: 'Stock',
+                        value:
+                            '${dashState.totalStock}',
+                        icon: Icons.warehouse,
+                      ),
+                      _HeaderStat(
+                        label: 'Low Stock',
+                        value:
+                            '${dashState.lowStockCount}',
+                        icon:
+                            Icons.warning_amber,
+                      ),
+                    ],
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
 
-            // ── APP INFO ────────────────────────
+            // ── APP INFO ──────────────────────
             _SectionCard(
               title: 'App Information',
               isDark: isDark,
@@ -140,7 +172,8 @@ class ProfileScreen extends ConsumerWidget {
                   isDark: isDark,
                 ),
                 _InfoTile(
-                  icon: Icons.admin_panel_settings,
+                  icon:
+                      Icons.admin_panel_settings,
                   label: 'Role',
                   value: user?.isAdmin == true
                       ? 'Admin'
@@ -157,7 +190,7 @@ class ProfileScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
 
-            // ── APPEARANCE ──────────────────────
+            // ── APPEARANCE ────────────────────
             _SectionCard(
               title: 'Appearance',
               isDark: isDark,
@@ -170,13 +203,18 @@ class ProfileScreen extends ConsumerWidget {
                     value: AppThemeMode.light,
                     groupValue: themeMode,
                     onChanged: (_) => ref
-                        .read(themeProvider.notifier)
-                        .setTheme(AppThemeMode.light),
-                    activeColor: AppTheme.primary,
+                        .read(themeProvider
+                            .notifier)
+                        .setTheme(
+                            AppThemeMode.light),
+                    activeColor:
+                        AppTheme.primary,
                   ),
                   onTap: () => ref
-                      .read(themeProvider.notifier)
-                      .setTheme(AppThemeMode.light),
+                      .read(
+                          themeProvider.notifier)
+                      .setTheme(
+                          AppThemeMode.light),
                 ),
                 _SettingTile(
                   icon: Icons.nightlight_round,
@@ -186,13 +224,18 @@ class ProfileScreen extends ConsumerWidget {
                     value: AppThemeMode.dark,
                     groupValue: themeMode,
                     onChanged: (_) => ref
-                        .read(themeProvider.notifier)
-                        .setTheme(AppThemeMode.dark),
-                    activeColor: AppTheme.primary,
+                        .read(themeProvider
+                            .notifier)
+                        .setTheme(
+                            AppThemeMode.dark),
+                    activeColor:
+                        AppTheme.primary,
                   ),
                   onTap: () => ref
-                      .read(themeProvider.notifier)
-                      .setTheme(AppThemeMode.dark),
+                      .read(
+                          themeProvider.notifier)
+                      .setTheme(
+                          AppThemeMode.dark),
                 ),
                 _SettingTile(
                   icon: Icons.brightness_auto,
@@ -202,20 +245,24 @@ class ProfileScreen extends ConsumerWidget {
                     value: AppThemeMode.system,
                     groupValue: themeMode,
                     onChanged: (_) => ref
-                        .read(themeProvider.notifier)
+                        .read(themeProvider
+                            .notifier)
                         .setTheme(
                             AppThemeMode.system),
-                    activeColor: AppTheme.primary,
+                    activeColor:
+                        AppTheme.primary,
                   ),
                   onTap: () => ref
-                      .read(themeProvider.notifier)
-                      .setTheme(AppThemeMode.system),
+                      .read(
+                          themeProvider.notifier)
+                      .setTheme(
+                          AppThemeMode.system),
                 ),
               ],
             ),
             const SizedBox(height: 16),
 
-            // ── QUICK LINKS ─────────────────────
+            // ── QUICK LINKS ───────────────────
             _SectionCard(
               title: 'Quick Links',
               isDark: isDark,
@@ -252,7 +299,63 @@ class ProfileScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
 
-            // ── LOGOUT ──────────────────────────
+            // ── ABOUT ─────────────────────────
+            _SectionCard(
+              title: 'About',
+              isDark: isDark,
+              children: [
+                _SettingTile(
+                  icon: Icons.info_outline,
+                  label: 'About SK Mobiles',
+                  isDark: isDark,
+                  onTap: () => showAboutDialog(
+                    context: context,
+                    applicationName:
+                        'SK Mobiles Stock Manager',
+                    applicationVersion: '1.0.0',
+                    applicationIcon:
+                        const Icon(
+                            Icons.phone_android,
+                            color:
+                                AppTheme.primary,
+                            size: 40),
+                    children: [
+                      const Text(
+                          'Complete stock management solution for mobile accessories shops. Built with Flutter + Flask + Supabase.'),
+                    ],
+                  ),
+                ),
+                _SettingTile(
+                  icon: Icons.refresh,
+                  label: 'Refresh Stock Data',
+                  isDark: isDark,
+                  onTap: () async {
+                    await ref
+                        .read(dashboardProvider
+                            .notifier)
+                        .loadStats();
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(
+                              context)
+                          .showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                              '✅ Stock data refreshed'),
+                          backgroundColor:
+                              Colors.green,
+                          behavior:
+                              SnackBarBehavior
+                                  .floating,
+                        ),
+                      );
+                    }
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // ── LOGOUT ────────────────────────
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
@@ -261,10 +364,12 @@ class ProfileScreen extends ConsumerWidget {
                       await showDialog<bool>(
                     context: context,
                     builder: (ctx) => AlertDialog(
-                      shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(
-                                  16)),
+                      shape:
+                          RoundedRectangleBorder(
+                              borderRadius:
+                                  BorderRadius
+                                      .circular(
+                                          16)),
                       title:
                           const Text('Logout'),
                       content: const Text(
@@ -281,7 +386,8 @@ class ProfileScreen extends ConsumerWidget {
                           style: ElevatedButton
                               .styleFrom(
                                   backgroundColor:
-                                      Colors.red),
+                                      Colors
+                                          .red),
                           onPressed: () =>
                               Navigator.pop(
                                   ctx, true),
@@ -294,7 +400,8 @@ class ProfileScreen extends ConsumerWidget {
                   if (confirm == true &&
                       context.mounted) {
                     await ref
-                        .read(authProvider.notifier)
+                        .read(
+                            authProvider.notifier)
                         .logout();
                     if (context.mounted) {
                       context.go('/login');
@@ -306,9 +413,8 @@ class ProfileScreen extends ConsumerWidget {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
                   foregroundColor: Colors.white,
-                  padding:
-                      const EdgeInsets.symmetric(
-                          vertical: 14),
+                  padding: const EdgeInsets
+                      .symmetric(vertical: 14),
                   shape: RoundedRectangleBorder(
                     borderRadius:
                         BorderRadius.circular(12),
@@ -324,6 +430,59 @@ class ProfileScreen extends ConsumerWidget {
   }
 }
 
+// ── HEADER STAT ────────────────────────────────────────────────
+class _HeaderStat extends StatelessWidget {
+  final String label;
+  final String value;
+  final IconData icon;
+
+  const _HeaderStat({
+    required this.label,
+    required this.value,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        margin: const EdgeInsets.symmetric(
+            horizontal: 4),
+        padding: const EdgeInsets.symmetric(
+            vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white
+              .withValues(alpha: 0.15),
+          borderRadius:
+              BorderRadius.circular(12),
+        ),
+        child: Column(
+          children: [
+            Icon(icon,
+                color: Colors.white, size: 18),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            Text(
+              label,
+              style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 10),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── SECTION CARD ───────────────────────────────────────────────
 class _SectionCard extends StatelessWidget {
   final String title;
   final List<Widget> children;
@@ -337,21 +496,11 @@ class _SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark
-            ? const Color(0xFF1A1A2E)
-            : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color:
-                Colors.black.withValues(alpha: 0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    return Material(
+      color: isDark
+          ? const Color(0xFF1A1A2E)
+          : Colors.white,
+      borderRadius: BorderRadius.circular(16),
       child: Column(
         crossAxisAlignment:
             CrossAxisAlignment.start,
@@ -377,6 +526,7 @@ class _SectionCard extends StatelessWidget {
   }
 }
 
+// ── INFO TILE ──────────────────────────────────────────────────
 class _InfoTile extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -416,6 +566,7 @@ class _InfoTile extends StatelessWidget {
   }
 }
 
+// ── SETTING TILE ───────────────────────────────────────────────
 class _SettingTile extends StatelessWidget {
   final IconData icon;
   final String label;

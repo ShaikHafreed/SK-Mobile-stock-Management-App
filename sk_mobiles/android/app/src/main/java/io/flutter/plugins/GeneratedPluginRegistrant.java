@@ -56,6 +56,11 @@ public final class GeneratedPluginRegistrant {
       Log.e(TAG, "Error registering plugin mobile_scanner, dev.steenbakker.mobile_scanner.MobileScannerPlugin", e);
     }
     try {
+      flutterEngine.getPlugins().add(new com.crazecoder.openfile.OpenFilePlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin open_file_android, com.crazecoder.openfile.OpenFilePlugin", e);
+    }
+    try {
       flutterEngine.getPlugins().add(new io.flutter.plugins.sharedpreferences.SharedPreferencesPlugin());
     } catch (Exception e) {
       Log.e(TAG, "Error registering plugin shared_preferences_android, io.flutter.plugins.sharedpreferences.SharedPreferencesPlugin", e);
@@ -64,6 +69,11 @@ public final class GeneratedPluginRegistrant {
       flutterEngine.getPlugins().add(new com.tekartik.sqflite.SqflitePlugin());
     } catch (Exception e) {
       Log.e(TAG, "Error registering plugin sqflite_android, com.tekartik.sqflite.SqflitePlugin", e);
+    }
+    try {
+      flutterEngine.getPlugins().add(new io.flutter.plugins.urllauncher.UrlLauncherPlugin());
+    } catch (Exception e) {
+      Log.e(TAG, "Error registering plugin url_launcher_android, io.flutter.plugins.urllauncher.UrlLauncherPlugin", e);
     }
   }
 }

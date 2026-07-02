@@ -34,7 +34,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   bool _isPhoneLoading = false;
   bool _isCheckingLogin = true;
 
-  // Animation controllers
   late AnimationController _fadeCtrl;
   late AnimationController _floatCtrl;
   late AnimationController _particleCtrl;
@@ -75,7 +74,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           parent: _floatCtrl, curve: Curves.easeInOut),
     );
 
-    // Generate floating particles
     final rng = math.Random();
     for (int i = 0; i < 12; i++) {
       _particles.add(_Particle(
@@ -187,8 +185,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         },
         verificationFailed: (FirebaseAuthException e) {
           setState(() => _isPhoneLoading = false);
-          _showMsg(
-              e.message ?? 'Verification failed',
+          _showMsg(e.message ?? 'Verification failed',
               isError: true);
         },
         codeSent: (String vid, int? token) {
@@ -222,7 +219,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         verificationId: _verificationId!,
         smsCode: _otpCtrl.text.trim(),
       );
-      await FirebaseAuth.instance.signInWithCredential(cred);
+      await FirebaseAuth.instance
+          .signInWithCredential(cred);
       final ok = await ref
           .read(authProvider.notifier)
           .login('admin', 'admin123');
@@ -230,7 +228,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     } catch (e) {
       _showMsg('Invalid OTP', isError: true);
     } finally {
-      if (mounted) setState(() => _isPhoneLoading = false);
+      if (mounted) {
+        setState(() => _isPhoneLoading = false);
+      }
     }
   }
 
@@ -273,10 +273,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       );
     }
 
+    // ── FIXED: dynamic card height, error state included ──
+    double cardHeight;
+    if (_currentPage == 0) {
+      cardHeight =
+          authState.error != null ? 430 : 370;
+    } else {
+      cardHeight = _otpSent ? 430 : 370;
+    }
+
     return Scaffold(
       body: Stack(
         children: [
-          // ── ANIMATED GRADIENT BACKGROUND ─────────────
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
@@ -292,8 +300,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               ),
             ),
           ),
-
-          // ── FLOATING PARTICLES ────────────────────────
           AnimatedBuilder(
             animation: _particleCtrl,
             builder: (context, _) {
@@ -306,8 +312,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               );
             },
           ),
-
-          // ── DECORATIVE CIRCLES ────────────────────────
           Positioned(
             top: -60,
             right: -60,
@@ -316,9 +320,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               height: 200,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.05),
+                color:
+                    Colors.white.withValues(alpha: 0.05),
                 border: Border.all(
-                  color: Colors.white.withValues(alpha: 0.1),
+                  color:
+                      Colors.white.withValues(alpha: 0.1),
                   width: 1,
                 ),
               ),
@@ -332,16 +338,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               height: 250,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.blue.withValues(alpha: 0.08),
+                color:
+                    Colors.blue.withValues(alpha: 0.08),
                 border: Border.all(
-                  color: Colors.blue.withValues(alpha: 0.15),
+                  color:
+                      Colors.blue.withValues(alpha: 0.15),
                   width: 1,
                 ),
               ),
             ),
           ),
-
-          // ── MAIN CONTENT ──────────────────────────────
           SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(
@@ -353,14 +359,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                   child: Column(
                     children: [
                       const SizedBox(height: 32),
-
-                      // ── LOGO WITH FLOAT ANIMATION ────
                       AnimatedBuilder(
                         animation: _floatAnim,
                         builder: (context, child) =>
                             Transform.translate(
-                          offset: Offset(
-                              0, _floatAnim.value),
+                          offset:
+                              Offset(0, _floatAnim.value),
                           child: child,
                         ),
                         child: Column(
@@ -370,7 +374,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                               height: 96,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                gradient: const LinearGradient(
+                                gradient:
+                                    const LinearGradient(
                                   begin:
                                       Alignment.topLeft,
                                   end: Alignment
@@ -410,13 +415,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             ),
                             const SizedBox(height: 6),
                             Container(
-                              padding:
-                                  const EdgeInsets.symmetric(
-                                      horizontal: 16,
-                                      vertical: 5),
+                              padding: const EdgeInsets
+                                  .symmetric(
+                                  horizontal: 16,
+                                  vertical: 5),
                               decoration: BoxDecoration(
                                 color: Colors.white
-                                    .withValues(alpha: 0.1),
+                                    .withValues(
+                                        alpha: 0.1),
                                 borderRadius:
                                     BorderRadius.circular(
                                         20),
@@ -439,8 +445,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                         ),
                       ),
                       const SizedBox(height: 32),
-
-                      // ── GLASSMORPHISM TAB SWITCHER ───
                       Container(
                         decoration: BoxDecoration(
                           color: Colors.white
@@ -461,9 +465,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                         ),
                       ),
                       const SizedBox(height: 20),
-
-                      // ── GLASSMORPHISM CARD ───────────
-                      Container(
+                      AnimatedContainer(
+                        duration: const Duration(
+                            milliseconds: 250),
+                        curve: Curves.easeOut,
+                        height: cardHeight,
                         decoration: BoxDecoration(
                           color: Colors.white
                               .withValues(alpha: 0.1),
@@ -479,30 +485,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                               color: Colors.black
                                   .withValues(alpha: 0.2),
                               blurRadius: 30,
-                              offset: const Offset(0, 10),
+                              offset:
+                                  const Offset(0, 10),
                             ),
                           ],
                         ),
-                        child: SizedBox(
-                          height: _currentPage == 1 &&
-                                  _otpSent
-                              ? 420
-                              : 360,
-                          child: PageView(
-                            controller: _pageCtrl,
-                            onPageChanged: (i) =>
-                                setState(
-                                    () => _currentPage = i),
-                            children: [
-                              _buildSignInPage(authState),
-                              _buildPhonePage(),
-                            ],
-                          ),
+                        child: PageView(
+                          controller: _pageCtrl,
+                          onPageChanged: (i) => setState(
+                              () => _currentPage = i),
+                          children: [
+                            _buildSignInPage(authState),
+                            _buildPhonePage(),
+                          ],
                         ),
                       ),
                       const SizedBox(height: 20),
-
-                      // ── DIVIDER ──────────────────────
                       Row(
                         children: [
                           Expanded(
@@ -511,10 +509,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                       .withValues(
                                           alpha: 0.2))),
                           Padding(
-                            padding:
-                                const EdgeInsets.symmetric(
-                                    horizontal: 12),
-                            child: Text('OR CONTINUE WITH',
+                            padding: const EdgeInsets
+                                .symmetric(
+                                horizontal: 12),
+                            child: Text(
+                                'OR CONTINUE WITH',
                                 style: TextStyle(
                                     color: Colors.white
                                         .withValues(
@@ -530,16 +529,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                         ],
                       ),
                       const SizedBox(height: 16),
-
-                      // ── GOOGLE SIGN IN ───────────────
                       GestureDetector(
                         onTap: _isPhoneLoading
                             ? null
                             : _googleSignIn,
                         child: Container(
-                          padding:
-                              const EdgeInsets.symmetric(
-                                  vertical: 14),
+                          padding: const EdgeInsets
+                              .symmetric(vertical: 14),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius:
@@ -547,9 +543,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black
-                                    .withValues(alpha: 0.15),
+                                    .withValues(
+                                        alpha: 0.15),
                                 blurRadius: 12,
-                                offset: const Offset(0, 4),
+                                offset:
+                                    const Offset(0, 4),
                               ),
                             ],
                           ),
@@ -568,20 +566,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                             0xFF1565C0),
                                       ),
                                     )
-                                  : Container(
-                                      width: 22,
-                                      height: 22,
-                                      decoration:
-                                          const BoxDecoration(
-                                        shape:
-                                            BoxShape.circle,
-                                      ),
-                                      child: const Icon(
-                                        Icons.g_mobiledata,
-                                        color:
-                                            Color(0xFF4285F4),
-                                        size: 22,
-                                      ),
+                                  : const Icon(
+                                      Icons.g_mobiledata,
+                                      color: Color(
+                                          0xFF4285F4),
+                                      size: 22,
                                     ),
                               const SizedBox(width: 10),
                               const Text(
@@ -590,7 +579,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                   fontSize: 14,
                                   fontWeight:
                                       FontWeight.w600,
-                                  color: Color(0xFF333333),
+                                  color:
+                                      Color(0xFF333333),
                                 ),
                               ),
                             ],
@@ -598,7 +588,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                         ),
                       ),
                       const SizedBox(height: 24),
-
                       Text(
                         'SK Mobiles © 2024 · All rights reserved',
                         style: TextStyle(
@@ -626,12 +615,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         onTap: () {
           setState(() => _currentPage = index);
           _pageCtrl.animateToPage(index,
-              duration: const Duration(milliseconds: 300),
+              duration:
+                  const Duration(milliseconds: 300),
               curve: Curves.easeInOut);
         },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 300),
-          padding: const EdgeInsets.symmetric(vertical: 11),
+          padding:
+              const EdgeInsets.symmetric(vertical: 11),
           decoration: BoxDecoration(
             color: isActive
                 ? Colors.white
@@ -666,13 +657,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     );
   }
 
+  // ── FIXED: scrollable, no Spacer ──────────────────────
   Widget _buildSignInPage(AuthState authState) {
-    return Padding(
+    return SingleChildScrollView(
+      physics: const ClampingScrollPhysics(),
       padding: const EdgeInsets.all(24),
       child: Form(
         key: _loginFormKey,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          crossAxisAlignment:
+              CrossAxisAlignment.stretch,
           children: [
             const Text(
               'Welcome Back 👋',
@@ -687,7 +681,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               'Sign in to manage your stock',
               style: TextStyle(
                 fontSize: 13,
-                color: Colors.white.withValues(alpha: 0.6),
+                color:
+                    Colors.white.withValues(alpha: 0.6),
               ),
             ),
             const SizedBox(height: 24),
@@ -717,8 +712,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                   onTap: () => setState(
                       () => _rememberMe = !_rememberMe),
                   child: AnimatedContainer(
-                    duration:
-                        const Duration(milliseconds: 200),
+                    duration: const Duration(
+                        milliseconds: 200),
                     width: 20,
                     height: 20,
                     decoration: BoxDecoration(
@@ -752,16 +747,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.red.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(10),
+                  color: Colors.red
+                      .withValues(alpha: 0.2),
+                  borderRadius:
+                      BorderRadius.circular(10),
                   border: Border.all(
-                      color:
-                          Colors.red.withValues(alpha: 0.4)),
+                      color: Colors.red
+                          .withValues(alpha: 0.4)),
                 ),
                 child: Row(
                   children: [
                     const Icon(Icons.error_outline,
-                        color: Colors.white70, size: 16),
+                        color: Colors.white70,
+                        size: 16),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(authState.error!,
@@ -773,7 +771,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                 ),
               ),
             ],
-            const Spacer(),
+            const SizedBox(height: 20),
             _glowButton(
               label: authState.isLoading
                   ? null
@@ -787,8 +785,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     );
   }
 
+  // ── FIXED: scrollable, no Spacer ──────────────────────
   Widget _buildPhonePage() {
-    return Padding(
+    return SingleChildScrollView(
+      physics: const ClampingScrollPhysics(),
       padding: const EdgeInsets.all(24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -806,7 +806,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             'Enter your Indian mobile number',
             style: TextStyle(
                 fontSize: 13,
-                color: Colors.white.withValues(alpha: 0.6)),
+                color: Colors.white
+                    .withValues(alpha: 0.6)),
           ),
           const SizedBox(height: 24),
           Row(
@@ -815,9 +816,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                 padding: const EdgeInsets.symmetric(
                     horizontal: 12, vertical: 14),
                 decoration: BoxDecoration(
-                  color:
-                      Colors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
+                  color: Colors.white
+                      .withValues(alpha: 0.1),
+                  borderRadius:
+                      BorderRadius.circular(12),
                   border: Border.all(
                       color: Colors.white
                           .withValues(alpha: 0.2)),
@@ -860,7 +862,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
               ),
             ),
           ],
-          const Spacer(),
+          const SizedBox(height: 20),
           _glowButton(
             label: _isPhoneLoading
                 ? null
@@ -868,8 +870,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                     ? 'Verify OTP'
                     : 'Send OTP',
             isLoading: _isPhoneLoading,
-            onTap:
-                _otpSent ? _verifyOtp : _sendOtp,
+            onTap: _otpSent ? _verifyOtp : _sendOtp,
           ),
         ],
       ),
@@ -910,23 +911,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                   obscure
                       ? Icons.visibility_off_outlined
                       : Icons.visibility_outlined,
-                  color: Colors.white.withValues(alpha: 0.6),
+                  color: Colors.white
+                      .withValues(alpha: 0.6),
                   size: 18,
                 ),
                 onPressed: onToggle,
               )
             : null,
         filled: true,
-        fillColor: Colors.white.withValues(alpha: 0.08),
+        fillColor:
+            Colors.white.withValues(alpha: 0.08),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(
-              color: Colors.white.withValues(alpha: 0.2)),
+              color: Colors.white
+                  .withValues(alpha: 0.2)),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
           borderSide: BorderSide(
-              color: Colors.white.withValues(alpha: 0.2)),
+              color: Colors.white
+                  .withValues(alpha: 0.2)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),
@@ -960,7 +965,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.white.withValues(alpha: 0.3),
+              color:
+                  Colors.white.withValues(alpha: 0.3),
               blurRadius: 16,
               offset: const Offset(0, 4),
             ),
@@ -1021,7 +1027,8 @@ class _ParticlePainter extends CustomPainter {
     for (final p in particles) {
       final y = (p.y + progress * p.speed) % 1.0;
       final paint = Paint()
-        ..color = Colors.white.withValues(alpha: p.opacity)
+        ..color = Colors.white
+            .withValues(alpha: p.opacity)
         ..style = PaintingStyle.fill;
       canvas.drawCircle(
         Offset(p.x * size.width, y * size.height),

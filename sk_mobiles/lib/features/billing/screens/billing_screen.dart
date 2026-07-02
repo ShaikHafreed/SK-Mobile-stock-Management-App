@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/network/api_client.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/utils/whatsapp_share.dart';
 import '../../../models/product_model.dart';
 
 class BillingScreen extends ConsumerStatefulWidget {
@@ -78,8 +79,8 @@ class _BillingScreenState
         minChildSize: 0.5,
         builder: (ctx, scrollCtrl) => Container(
           decoration: BoxDecoration(
-            color:
-                Theme.of(context).scaffoldBackgroundColor,
+            color: Theme.of(context)
+                .scaffoldBackgroundColor,
             borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(24)),
           ),
@@ -91,7 +92,8 @@ class _BillingScreenState
                 height: 4,
                 decoration: BoxDecoration(
                   color: Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius:
+                      BorderRadius.circular(2),
                 ),
               ),
               Expanded(
@@ -121,7 +123,8 @@ class _BillingScreenState
   @override
   Widget build(BuildContext context) {
     final isDark =
-        Theme.of(context).brightness == Brightness.dark;
+        Theme.of(context).brightness ==
+            Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
@@ -141,7 +144,7 @@ class _BillingScreenState
       ),
       body: Column(
         children: [
-          // ── CUSTOMER INFO ────────────────────────
+          // ── CUSTOMER INFO ─────────────────────
           Container(
             color: AppTheme.primary
                 .withValues(alpha: 0.05),
@@ -173,7 +176,8 @@ class _BillingScreenState
                   child: TextField(
                     onChanged: (v) =>
                         _customerPhone = v,
-                    keyboardType: TextInputType.phone,
+                    keyboardType:
+                        TextInputType.phone,
                     decoration: InputDecoration(
                       hintText: 'Phone (optional)',
                       prefixIcon: const Icon(
@@ -194,7 +198,7 @@ class _BillingScreenState
             ),
           ),
 
-          // ── SEARCH PRODUCTS ───────────────────────
+          // ── SEARCH PRODUCTS ───────────────────
           Padding(
             padding: const EdgeInsets.all(12),
             child: TextField(
@@ -226,7 +230,7 @@ class _BillingScreenState
             ),
           ),
 
-          // ── SEARCH RESULTS ────────────────────────
+          // ── SEARCH RESULTS ────────────────────
           if (_searchResults.isNotEmpty)
             Container(
               margin: const EdgeInsets.symmetric(
@@ -273,7 +277,8 @@ class _BillingScreenState
                             )
                           : const Icon(
                               Icons.phone_android,
-                              color: AppTheme.primary,
+                              color:
+                                  AppTheme.primary,
                             ),
                     ),
                     title: Text(
@@ -287,7 +292,8 @@ class _BillingScreenState
                           fontSize: 11),
                     ),
                     trailing: IconButton(
-                      icon: const Icon(Icons.add_circle,
+                      icon: const Icon(
+                          Icons.add_circle,
                           color: AppTheme.primary),
                       onPressed: () => _addItem(p),
                     ),
@@ -297,7 +303,7 @@ class _BillingScreenState
               ),
             ),
 
-          // ── BILL ITEMS ────────────────────────────
+          // ── BILL ITEMS ────────────────────────
           Expanded(
             child: _items.isEmpty
                 ? Center(
@@ -307,45 +313,47 @@ class _BillingScreenState
                       children: [
                         Icon(Icons.receipt_long,
                             size: 64,
-                            color:
-                                Colors.grey.shade300),
+                            color: Colors
+                                .grey.shade300),
                         const SizedBox(height: 12),
                         Text(
                           'No items added yet',
                           style: TextStyle(
-                              color:
-                                  Colors.grey.shade500,
+                              color: Colors
+                                  .grey.shade500,
                               fontSize: 15),
                         ),
                         const SizedBox(height: 6),
                         Text(
                           'Search above to add products',
                           style: TextStyle(
-                              color:
-                                  Colors.grey.shade400,
+                              color: Colors
+                                  .grey.shade400,
                               fontSize: 12),
                         ),
                       ],
                     ),
                   )
                 : ListView.builder(
-                    padding: const EdgeInsets.all(12),
+                    padding:
+                        const EdgeInsets.all(12),
                     itemCount: _items.length,
                     itemBuilder: (ctx, i) =>
                         _BillItemTile(
                       item: _items[i],
-                      onRemove: () => _removeItem(i),
+                      onRemove: () =>
+                          _removeItem(i),
                       onQtyChange: (qty) =>
                           setState(() =>
                               _items[i].qty = qty),
                       onPriceChange: (price) =>
-                          setState(() =>
-                              _items[i].price = price),
+                          setState(() => _items[i]
+                              .price = price),
                     ),
                   ),
           ),
 
-          // ── TOTAL BAR ─────────────────────────────
+          // ── TOTAL BAR ─────────────────────────
           if (_items.isNotEmpty)
             Container(
               padding: const EdgeInsets.all(16),
@@ -366,12 +374,13 @@ class _BillingScreenState
                 children: [
                   Row(
                     mainAxisAlignment:
-                        MainAxisAlignment.spaceBetween,
+                        MainAxisAlignment
+                            .spaceBetween,
                     children: [
                       Text('Subtotal',
                           style: TextStyle(
-                              color:
-                                  Colors.grey.shade600)),
+                              color: Colors.grey
+                                  .shade600)),
                       Text(
                           '₹${_subtotal.toStringAsFixed(2)}'),
                     ],
@@ -379,12 +388,13 @@ class _BillingScreenState
                   const SizedBox(height: 4),
                   Row(
                     mainAxisAlignment:
-                        MainAxisAlignment.spaceBetween,
+                        MainAxisAlignment
+                            .spaceBetween,
                     children: [
                       Text('GST (18%)',
                           style: TextStyle(
-                              color:
-                                  Colors.grey.shade600)),
+                              color: Colors.grey
+                                  .shade600)),
                       Text(
                           '₹${_tax.toStringAsFixed(2)}'),
                     ],
@@ -392,19 +402,22 @@ class _BillingScreenState
                   const Divider(),
                   Row(
                     mainAxisAlignment:
-                        MainAxisAlignment.spaceBetween,
+                        MainAxisAlignment
+                            .spaceBetween,
                     children: [
                       const Text(
                         'Grand Total',
                         style: TextStyle(
-                          fontWeight: FontWeight.bold,
+                          fontWeight:
+                              FontWeight.bold,
                           fontSize: 16,
                         ),
                       ),
                       Text(
                         '₹${_grandTotal.toStringAsFixed(2)}',
                         style: const TextStyle(
-                          fontWeight: FontWeight.bold,
+                          fontWeight:
+                              FontWeight.bold,
                           fontSize: 18,
                           color: AppTheme.primary,
                         ),
@@ -419,14 +432,17 @@ class _BillingScreenState
                       icon: const Icon(
                           Icons.receipt_long),
                       label: const Text(
-                          'Preview & Print Bill'),
-                      style: ElevatedButton.styleFrom(
-                        padding:
-                            const EdgeInsets.symmetric(
-                                vertical: 14),
-                        shape: RoundedRectangleBorder(
+                          'Preview & Share Bill'),
+                      style:
+                          ElevatedButton.styleFrom(
+                        padding: const EdgeInsets
+                            .symmetric(
+                            vertical: 14),
+                        shape:
+                            RoundedRectangleBorder(
                           borderRadius:
-                              BorderRadius.circular(12),
+                              BorderRadius.circular(
+                                  12),
                         ),
                       ),
                     ),
@@ -474,7 +490,8 @@ class _BillItemTile extends StatefulWidget {
       _BillItemTileState();
 }
 
-class _BillItemTileState extends State<_BillItemTile> {
+class _BillItemTileState
+    extends State<_BillItemTile> {
   late TextEditingController _priceCtrl;
 
   @override
@@ -496,7 +513,8 @@ class _BillItemTileState extends State<_BillItemTile> {
   @override
   Widget build(BuildContext context) {
     final isDark =
-        Theme.of(context).brightness == Brightness.dark;
+        Theme.of(context).brightness ==
+            Brightness.dark;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
@@ -508,7 +526,8 @@ class _BillItemTileState extends State<_BillItemTile> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
+            color: Colors.black
+                .withValues(alpha: 0.05),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -531,18 +550,22 @@ class _BillItemTileState extends State<_BillItemTile> {
                       ),
                     ),
                     Text(
-                      widget.item.product.categoryName ??
+                      widget.item.product
+                              .categoryName ??
                           '',
                       style: TextStyle(
-                          color: Colors.grey.shade500,
+                          color:
+                              Colors.grey.shade500,
                           fontSize: 11),
                     ),
                   ],
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.delete_outline,
-                    color: Colors.red, size: 20),
+                icon: const Icon(
+                    Icons.delete_outline,
+                    color: Colors.red,
+                    size: 20),
                 onPressed: widget.onRemove,
               ),
             ],
@@ -550,7 +573,6 @@ class _BillItemTileState extends State<_BillItemTile> {
           const SizedBox(height: 8),
           Row(
             children: [
-              // Price field
               Expanded(
                 child: TextField(
                   controller: _priceCtrl,
@@ -577,8 +599,6 @@ class _BillItemTileState extends State<_BillItemTile> {
                 ),
               ),
               const SizedBox(width: 12),
-
-              // Qty controls
               Row(
                 children: [
                   GestureDetector(
@@ -590,42 +610,50 @@ class _BillItemTileState extends State<_BillItemTile> {
                       width: 32,
                       height: 32,
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade100,
+                        color:
+                            Colors.grey.shade100,
                         borderRadius:
-                            BorderRadius.circular(8),
+                            BorderRadius.circular(
+                                8),
                         border: Border.all(
-                            color:
-                                Colors.grey.shade300),
+                            color: Colors
+                                .grey.shade300),
                       ),
                       child: Icon(Icons.remove,
                           size: 16,
-                          color: widget.item.qty > 1
-                              ? Colors.grey.shade700
-                              : Colors.grey.shade300),
+                          color: widget.item.qty >
+                                  1
+                              ? Colors
+                                  .grey.shade700
+                              : Colors
+                                  .grey.shade300),
                     ),
                   ),
                   Padding(
-                    padding:
-                        const EdgeInsets.symmetric(
-                            horizontal: 10),
+                    padding: const EdgeInsets
+                        .symmetric(
+                        horizontal: 10),
                     child: Text(
                       '${widget.item.qty}',
                       style: const TextStyle(
-                        fontWeight: FontWeight.bold,
+                        fontWeight:
+                            FontWeight.bold,
                         fontSize: 16,
                       ),
                     ),
                   ),
                   GestureDetector(
-                    onTap: () => widget.onQtyChange(
-                        widget.item.qty + 1),
+                    onTap: () =>
+                        widget.onQtyChange(
+                            widget.item.qty + 1),
                     child: Container(
                       width: 32,
                       height: 32,
                       decoration: BoxDecoration(
                         color: AppTheme.primary,
                         borderRadius:
-                            BorderRadius.circular(8),
+                            BorderRadius.circular(
+                                8),
                       ),
                       child: const Icon(Icons.add,
                           size: 16,
@@ -635,8 +663,6 @@ class _BillItemTileState extends State<_BillItemTile> {
                 ],
               ),
               const SizedBox(width: 12),
-
-              // Total
               Text(
                 '₹${widget.item.total.toStringAsFixed(0)}',
                 style: const TextStyle(
@@ -673,11 +699,56 @@ class _BillPreview extends StatelessWidget {
     required this.scrollCtrl,
   });
 
+  Future<void> _shareOnWhatsApp(
+      BuildContext context,
+      String billNo,
+      String dateStr) async {
+    final itemMaps = items
+        .map((i) => {
+              'name':
+                  '${i.product.brand ?? ''} ${i.product.displayName}'
+                      .trim(),
+              'qty': i.qty,
+              'price':
+                  i.price.toStringAsFixed(0),
+              'total':
+                  i.total.toStringAsFixed(0),
+            })
+        .toList();
+
+    final text = WhatsAppShare.buildBillText(
+      billNo: billNo,
+      dateStr: dateStr,
+      customerName: customerName,
+      items: itemMaps,
+      subtotal: subtotal,
+      gst: tax,
+      total: grandTotal,
+    );
+
+    final ok = await WhatsAppShare.shareBill(
+      billText: text,
+      phone: customerPhone,
+    );
+
+    if (!ok && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+              '❌ Could not open WhatsApp. Is it installed?'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final dateStr =
-        DateFormat('dd MMM yyyy, hh:mm a').format(now);
+        DateFormat('dd MMM yyyy, hh:mm a')
+            .format(now);
     final billNo =
         'SKM${now.millisecondsSinceEpoch.toString().substring(8)}';
 
@@ -696,12 +767,14 @@ class _BillPreview extends StatelessWidget {
                   Color(0xFF42A5F5),
                 ],
               ),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius:
+                  BorderRadius.circular(16),
             ),
             child: Column(
               children: [
                 const Icon(Icons.phone_android,
-                    color: Colors.white, size: 36),
+                    color: Colors.white,
+                    size: 36),
                 const SizedBox(height: 8),
                 const Text(
                   'SK MOBILES',
@@ -721,7 +794,8 @@ class _BillPreview extends StatelessWidget {
                 const SizedBox(height: 12),
                 Row(
                   mainAxisAlignment:
-                      MainAxisAlignment.spaceBetween,
+                      MainAxisAlignment
+                          .spaceBetween,
                   children: [
                     Text('Bill No: $billNo',
                         style: const TextStyle(
@@ -744,7 +818,8 @@ class _BillPreview extends StatelessWidget {
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: Colors.grey.shade50,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius:
+                    BorderRadius.circular(12),
               ),
               child: Row(
                 children: [
@@ -759,13 +834,15 @@ class _BillPreview extends StatelessWidget {
                       Text(
                         customerName,
                         style: const TextStyle(
-                            fontWeight: FontWeight.bold),
+                            fontWeight:
+                                FontWeight.bold),
                       ),
-                      if (customerPhone.isNotEmpty)
+                      if (customerPhone
+                          .isNotEmpty)
                         Text(customerPhone,
                             style: TextStyle(
-                                color:
-                                    Colors.grey.shade600,
+                                color: Colors.grey
+                                    .shade600,
                                 fontSize: 12)),
                     ],
                   ),
@@ -779,9 +856,10 @@ class _BillPreview extends StatelessWidget {
             padding: const EdgeInsets.symmetric(
                 horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color:
-                  AppTheme.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
+              color: AppTheme.primary
+                  .withValues(alpha: 0.1),
+              borderRadius:
+                  BorderRadius.circular(8),
             ),
             child: const Row(
               children: [
@@ -794,21 +872,24 @@ class _BillPreview extends StatelessWidget {
                             fontSize: 12))),
                 Expanded(
                     child: Text('Qty',
-                        textAlign: TextAlign.center,
+                        textAlign:
+                            TextAlign.center,
                         style: TextStyle(
                             fontWeight:
                                 FontWeight.bold,
                             fontSize: 12))),
                 Expanded(
                     child: Text('Price',
-                        textAlign: TextAlign.center,
+                        textAlign:
+                            TextAlign.center,
                         style: TextStyle(
                             fontWeight:
                                 FontWeight.bold,
                             fontSize: 12))),
                 Expanded(
                     child: Text('Total',
-                        textAlign: TextAlign.right,
+                        textAlign:
+                            TextAlign.right,
                         style: TextStyle(
                             fontWeight:
                                 FontWeight.bold,
@@ -819,8 +900,10 @@ class _BillPreview extends StatelessWidget {
 
           // Items
           ...items.map((item) => Padding(
-                padding: const EdgeInsets.symmetric(
-                    vertical: 8, horizontal: 12),
+                padding:
+                    const EdgeInsets.symmetric(
+                        vertical: 8,
+                        horizontal: 12),
                 child: Row(
                   children: [
                     Expanded(
@@ -834,7 +917,8 @@ class _BillPreview extends StatelessWidget {
                     Expanded(
                       child: Text(
                         '${item.qty}',
-                        textAlign: TextAlign.center,
+                        textAlign:
+                            TextAlign.center,
                         style: const TextStyle(
                             fontSize: 12),
                       ),
@@ -842,7 +926,8 @@ class _BillPreview extends StatelessWidget {
                     Expanded(
                       child: Text(
                         '₹${item.price.toStringAsFixed(0)}',
-                        textAlign: TextAlign.center,
+                        textAlign:
+                            TextAlign.center,
                         style: const TextStyle(
                             fontSize: 12),
                       ),
@@ -850,9 +935,11 @@ class _BillPreview extends StatelessWidget {
                     Expanded(
                       child: Text(
                         '₹${item.total.toStringAsFixed(0)}',
-                        textAlign: TextAlign.right,
+                        textAlign:
+                            TextAlign.right,
                         style: const TextStyle(
-                            fontWeight: FontWeight.bold,
+                            fontWeight:
+                                FontWeight.bold,
                             fontSize: 12),
                       ),
                     ),
@@ -888,7 +975,8 @@ class _BillPreview extends StatelessWidget {
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: Colors.green.shade50,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius:
+                  BorderRadius.circular(12),
               border: Border.all(
                   color: Colors.green.shade200),
             ),
@@ -911,33 +999,28 @@ class _BillPreview extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // Share button
+          // ── WHATSAPP SHARE BUTTON ─────────────
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: () {
-                Navigator.pop(context);
-                ScaffoldMessenger.of(context)
-                    .showSnackBar(
-                  const SnackBar(
-                    content: Text(
-                        '📄 Bill saved! WhatsApp sharing coming soon.'),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              },
+              onPressed: () => _shareOnWhatsApp(
+                  context, billNo, dateStr),
               icon: const Icon(Icons.share),
-              label: const Text('Share Bill'),
+              label: const Text(
+                  'Share on WhatsApp'),
               style: ElevatedButton.styleFrom(
-                padding:
-                    const EdgeInsets.symmetric(
-                        vertical: 14),
+                backgroundColor:
+                    const Color(0xFF25D366),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                    vertical: 14),
                 shape: RoundedRectangleBorder(
                     borderRadius:
                         BorderRadius.circular(12)),
               ),
             ),
           ),
+          const SizedBox(height: 20),
         ],
       ),
     );
@@ -955,7 +1038,8 @@ class _TotalRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
+      padding:
+          const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         mainAxisAlignment:
             MainAxisAlignment.spaceBetween,
