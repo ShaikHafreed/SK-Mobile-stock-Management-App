@@ -9,6 +9,10 @@ backend/.env
 *.pyo
 *.pyd
 
+# Python virtual environment
+backend/venv/
+backend/.venv/
+
 # Flutter
 sk_mobiles/build/
 sk_mobiles/.dart_tool/
