@@ -1,6 +1,6 @@
 class AppConstants {
   static const String localUrl =
-      'http://192.168.48.181:5000/api';
+      'http://192.168.31.229:5000/api';
 
   static const String ngrokUrl =
       'https://smudgy-imminent-hankie.ngrok-free.dev/api';

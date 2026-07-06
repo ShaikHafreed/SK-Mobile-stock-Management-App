@@ -5,6 +5,7 @@ import '../providers/dashboard_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../core/providers/theme_provider.dart';
 import '../../../core/theme/app_theme.dart';
+import '../../../core/widgets/magic_nav_bar.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -671,11 +672,42 @@ class _DashboardScreenState
                       );
                     },
                   ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 90),
               ],
             ),
           ),
         ),
+      ),
+      extendBody: true,
+      bottomNavigationBar: MagicNavBar(
+        currentIndex: 0,
+        items: [
+          MagicNavItem(
+            icon: Icons.home_rounded,
+            label: 'Home',
+            onTap: () {},
+          ),
+          MagicNavItem(
+            icon: Icons.search_rounded,
+            label: 'Search',
+            onTap: () => context.push('/search'),
+          ),
+          MagicNavItem(
+            icon: Icons.receipt_long_rounded,
+            label: 'Bill',
+            onTap: () => context.push('/billing'),
+          ),
+          MagicNavItem(
+            icon: Icons.qr_code_scanner_rounded,
+            label: 'Scan',
+            onTap: () => context.push('/barcode'),
+          ),
+          MagicNavItem(
+            icon: Icons.person_rounded,
+            label: 'Profile',
+            onTap: () => context.push('/profile'),
+          ),
+        ],
       ),
     );
   }
