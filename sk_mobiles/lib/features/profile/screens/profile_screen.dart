@@ -1,16 +1,98 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../dashboard/providers/dashboard_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/providers/theme_provider.dart';
 
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfileScreen> createState() =>
+      _ProfileScreenState();
+}
+
+class _ProfileScreenState
+    extends ConsumerState<ProfileScreen> {
+  final _picker = ImagePicker();
+  bool _isUploadingImage = false;
+
+  Future<void> _pickAndUploadProfileImage() async {
+    final picked = await _picker.pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 800,
+      maxHeight: 800,
+      imageQuality: 85,
+    );
+    if (picked == null) return;
+
+    setState(() => _isUploadingImage = true);
+    final ok = await ref
+        .read(authProvider.notifier)
+        .updateProfileImage(picked.path);
+    setState(() => _isUploadingImage = false);
+
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(ok
+          ? '✅ Profile picture updated'
+          : '❌ Failed to update profile picture'),
+      backgroundColor: ok ? Colors.green : Colors.red,
+      behavior: SnackBarBehavior.floating,
+    ));
+  }
+
+  Future<void> _editName(String currentName) async {
+    final ctrl = TextEditingController(text: currentName);
+    final newName = await showDialog<String>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16)),
+        title: const Text('Edit Name'),
+        content: TextField(
+          controller: ctrl,
+          autofocus: true,
+          decoration: const InputDecoration(
+            labelText: 'Full Name',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () =>
+                Navigator.pop(ctx, ctrl.text.trim()),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+
+    if (newName == null || newName.isEmpty || !mounted) {
+      return;
+    }
+    final ok = await ref
+        .read(authProvider.notifier)
+        .updateProfile(newName);
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text(ok
+          ? '✅ Name updated'
+          : '❌ Failed to update name'),
+      backgroundColor: ok ? Colors.green : Colors.red,
+      behavior: SnackBarBehavior.floating,
+    ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
     final dashState = ref.watch(dashboardProvider);
     final themeMode = ref.watch(themeProvider);
@@ -18,6 +100,12 @@ class ProfileScreen extends ConsumerWidget {
     final isDark =
         Theme.of(context).brightness ==
             Brightness.dark;
+    final displayName = (user?.fullName != null &&
+            user!.fullName!.isNotEmpty)
+        ? user.fullName!
+        : (user != null
+            ? '${user.username[0].toUpperCase()}${user.username.substring(1)}'
+            : 'User');
 
     return Scaffold(
       backgroundColor: isDark
@@ -58,45 +146,144 @@ class ProfileScreen extends ConsumerWidget {
               ),
               child: Column(
                 children: [
-                  Container(
-                    width: 80,
-                    height: 80,
-                    decoration: BoxDecoration(
-                      color: Colors.white
-                          .withValues(alpha: 0.2),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white
-                            .withValues(
-                                alpha: 0.5),
-                        width: 2,
-                      ),
-                    ),
-                    child: Center(
-                      child: Text(
-                        user?.username
-                                .substring(0, 1)
-                                .toUpperCase() ??
-                            'U',
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 32,
-                          fontWeight:
-                              FontWeight.bold,
+                  GestureDetector(
+                    onTap: _isUploadingImage
+                        ? null
+                        : _pickAndUploadProfileImage,
+                    child: Stack(
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: Colors.white
+                                .withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: Colors.white
+                                  .withValues(
+                                      alpha: 0.5),
+                              width: 2,
+                            ),
+                            image: (user?.profileImage !=
+                                        null &&
+                                    user!.profileImage!
+                                        .isNotEmpty)
+                                ? DecorationImage(
+                                    image: NetworkImage(
+                                        user.profileImage!),
+                                    fit: BoxFit.cover,
+                                  )
+                                : null,
+                          ),
+                          child: (user?.profileImage ==
+                                      null ||
+                                  user!.profileImage!.isEmpty)
+                              ? Center(
+                                  child: _isUploadingImage
+                                      ? const SizedBox(
+                                          width: 24,
+                                          height: 24,
+                                          child:
+                                              CircularProgressIndicator(
+                                            color:
+                                                Colors.white,
+                                            strokeWidth: 2,
+                                          ),
+                                        )
+                                      : Text(
+                                          user?.username
+                                                  .substring(
+                                                      0, 1)
+                                                  .toUpperCase() ??
+                                              'U',
+                                          style: const TextStyle(
+                                            color:
+                                                Colors.white,
+                                            fontSize: 32,
+                                            fontWeight:
+                                                FontWeight
+                                                    .bold,
+                                          ),
+                                        ),
+                                )
+                              : (_isUploadingImage
+                                  ? Container(
+                                      decoration:
+                                          BoxDecoration(
+                                        shape: BoxShape
+                                            .circle,
+                                        color: Colors.black
+                                            .withValues(
+                                                alpha: 0.4),
+                                      ),
+                                      child: const Center(
+                                        child:
+                                            CircularProgressIndicator(
+                                          color:
+                                              Colors.white,
+                                          strokeWidth: 2,
+                                        ),
+                                      ),
+                                    )
+                                  : null),
                         ),
-                      ),
+                        Positioned(
+                          right: 0,
+                          bottom: 0,
+                          child: Container(
+                            padding:
+                                const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              border: Border.all(
+                                  color:
+                                      const Color(0xFF1565C0),
+                                  width: 1.5),
+                            ),
+                            child: const Icon(
+                              Icons.camera_alt,
+                              size: 14,
+                              color: Color(0xFF1565C0),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 14),
-                  Text(
-                    user != null
-                        ? '${user.username[0].toUpperCase()}${user.username.substring(1)}'
-                        : 'User',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        displayName,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      GestureDetector(
+                        onTap: () =>
+                            _editName(user?.fullName ?? ''),
+                        child: Container(
+                          padding:
+                              const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: Colors.white
+                                .withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.edit,
+                            size: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 6),
                   Container(

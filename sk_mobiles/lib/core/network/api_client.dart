@@ -76,6 +76,18 @@ class ApiClient {
         data: {'username': username, 'password': password});
   }
 
+  Future<Response> updateProfile(String fullName) async =>
+      await _dio.put('/auth/profile',
+          data: {'full_name': fullName});
+
+  Future<Response> uploadProfileImage(String filePath) async {
+    final formData = FormData.fromMap({
+      'image': await MultipartFile.fromFile(filePath),
+    });
+    return await _dio.post('/auth/profile/upload-image',
+        data: formData);
+  }
+
   Future<Response> getDashboardStats() async =>
       await _dio.get('/products/dashboard/stats');
 

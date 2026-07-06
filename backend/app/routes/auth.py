@@ -1,3 +1,4 @@
+import uuid
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import (
     create_access_token,
@@ -65,6 +66,90 @@ def refresh():
 def get_me():
     user = get_current_user()
     return jsonify({'user': user.to_dict()}), 200
+
+
+# ─── UPDATE OWN PROFILE ───────────────────────────────────────────────────────
+@auth_bp.route('/profile', methods=['PUT'])
+@jwt_required()
+def update_profile():
+    current_user = get_current_user()
+    data = request.get_json()
+
+    if 'full_name' in data:
+        current_user.full_name = data['full_name']
+
+    db.session.commit()
+
+    log_activity(
+        current_user.id,
+        f"{current_user.username} updated their profile",
+        module='auth'
+    )
+
+    return jsonify({
+        'message': 'Profile updated successfully',
+        'user': current_user.to_dict()
+    }), 200
+
+
+# ─── UPLOAD OWN PROFILE PICTURE ───────────────────────────────────────────────
+@auth_bp.route('/profile/upload-image', methods=['POST'])
+@jwt_required()
+def upload_profile_image():
+    current_user = get_current_user()
+
+    if 'image' not in request.files:
+        return jsonify({'error': 'No image file provided'}), 400
+
+    file = request.files['image']
+    if file.filename == '':
+        return jsonify({'error': 'No file selected'}), 400
+
+    allowed = {'png', 'jpg', 'jpeg', 'webp'}
+    ext = file.filename.rsplit('.', 1)[-1].lower()
+    if ext not in allowed:
+        return jsonify({'error': 'Only PNG, JPG, JPEG, WEBP allowed'}), 400
+
+    try:
+        from supabase import create_client
+        import os
+
+        supabase_url = os.getenv('SUPABASE_URL')
+        supabase_key = os.getenv('SUPABASE_SECRET_KEY')
+        supabase = create_client(supabase_url, supabase_key)
+
+        filename = f"profiles/user_{current_user.id}_{uuid.uuid4().hex[:8]}.{ext}"
+        file_bytes = file.read()
+
+        supabase.storage.from_('sk-mobiles-images').upload(
+            path=filename,
+            file=file_bytes,
+            file_options={
+                "content-type": f"image/{ext}",
+                "upsert": "true"
+            }
+        )
+
+        public_url = supabase.storage.from_(
+            'sk-mobiles-images'
+        ).get_public_url(filename)
+
+        current_user.profile_image = public_url
+        db.session.commit()
+
+        log_activity(
+            current_user.id,
+            f"{current_user.username} updated their profile picture",
+            module='auth'
+        )
+
+        return jsonify({
+            'message': 'Profile picture uploaded successfully',
+            'profile_image': public_url
+        }), 200
+
+    except Exception as e:
+        return jsonify({'error': f'Upload failed: {str(e)}'}), 500
 
 
 # ─── CREATE USER (Admin only) ─────────────────────────────────────────────────

@@ -33,6 +33,10 @@ class Config:
     SECRET_KEY = os.getenv(
         'SECRET_KEY', 'sk-mobiles-secret-key-2024')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_pre_ping': True,
+        'pool_recycle': 280,
+    }
     JWT_SECRET_KEY = os.getenv(
         'JWT_SECRET_KEY', 'sk-mobiles-jwt-secret-2024')
     JWT_ACCESS_TOKEN_EXPIRES = 86400

@@ -233,7 +233,9 @@ def generate_full_inventory_excel():
     wb = Workbook()
     wb.remove(wb.active)  # Remove default sheet
 
-    categories = Category.query.filter_by(is_active=True).all()
+    categories = Category.query.filter_by(
+        is_active=True
+    ).filter(Category.slug != 'temper-glass').all()
 
     for category in categories:
         ws = wb.create_sheet(title=category.name[:31])
