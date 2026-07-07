@@ -38,18 +38,40 @@ c:\Users\shaik\OneDrive\Documents\GitHub\SK-Mobile-stock-Management-App\
         └── models/ (user_model, product_model, category_model, temper_box_model)
 
 ## Key Config Values
-- Local API: http://192.168.31.229:5000/api (check ipconfig if IP changed)
+- **Live backend (2026-07-07): https://backend-three-murex-79.vercel.app/api**
+  — deployed on Vercel (project spin-x/backend), this is what the app
+  points to by default now (AppConstants.baseUrl = liveUrl). Local IP
+  and ngrok URLs are kept in app_constants.dart as fallbacks only.
+- Local API (fallback): http://192.168.31.229:5000/api (check ipconfig if IP changed;
+  this machine has flaky routing when USB-tethered to a phone — see below)
 - API key header: X-API-Key: sk-mobiles-api-key-2024-hafreed
 - ngrok header required: ngrok-skip-browser-warning: true
 - App logins: admin/admin123 (admin), staff/staff123 (staff)
 - Firebase project: sk-mobiles (sk-mobiles-c5608), package com.skmobiles.sk_mobiles
 - google-services.json at sk_mobiles/android/app/
 - Supabase DB password is in backend/.env — never commit .env
+- **Supabase DB connections must use the connection pooler, not the direct
+  host.** `db.<ref>.supabase.co` only resolves to an IPv6 address — no
+  IPv4 — so it fails from IPv4-only environments (Vercel/Lambda has no
+  outbound IPv6 at all; this dev machine also failed over USB phone
+  tethering, which has spotty IPv6 passthrough). Use
+  `aws-1-ap-south-1.pooler.supabase.com` (NOTE: aws-1, not aws-0 — this
+  project's tenant only exists on the aws-1 pooler cluster, confirmed by
+  testing; aws-0 returns "tenant/user ... not found"), port 5432 (session
+  mode, safest for SQLAlchemy) or 6543 (transaction mode), user
+  `postgres.gbqbepopvpkjozyrivwz`.
 
-## Run Commands (3 terminals)
-1. cd backend && venv\Scripts\python.exe run.py   (venv created 2026-07-05 on this machine; requirements.txt now includes `supabase`, no longer `cloudinary`)
-2. ngrok http 5000
-3. cd sk_mobiles && flutter run   (Flutter SDK is NOT installed on this machine as of 2026-07-05 — install it before running this)
+## Run Commands (3 terminals) — for local dev only, not required for the app to work
+1. cd backend && venv\Scripts\python.exe run.py   (venv created 2026-07-05 on this machine; requirements.txt now includes `supabase` 2.31.0 (needed for the new sb_secret_ key format), no longer `cloudinary`)
+2. ngrok http 5000   (only if you need to test against local instead of the live Vercel backend)
+3. cd sk_mobiles && flutter run   (Flutter SDK installed 2026-07-06 on this machine at C:\Users\shaik\flutter; Android SDK at C:\Users\shaik\Android, JDK at C:\Users\shaik\jdk-17 — all via user PATH/JAVA_HOME/ANDROID_HOME env vars)
+
+## Redeploying the backend to Vercel
+cd backend && npx vercel deploy --prod --yes
+Env vars are already set on the Vercel project (spin-x/backend) — only
+re-run `vercel env add/rm` if a credential changes. `vercel logs <url> --json`
+for full tracebacks (the client response never shows tracebacks since
+ProductionConfig has DEBUG=False).
 
 ## Features DONE
 Login (glassmorphism UI, Remember Me, Google Sign-In, Phone OTP UI),
