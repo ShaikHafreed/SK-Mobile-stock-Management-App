@@ -18,7 +18,7 @@ class ApiClient {
         'Content-Type': 'application/json',
         'X-API-Key': AppConstants.apiKey,
         'ngrok-skip-browser-warning': 'true',
-        'User-Agent': 'SKMobilesApp/1.0',
+        'User-Agent': 'SRMobilesApp/1.0',
       },
     ));
 
@@ -31,7 +31,7 @@ class ApiClient {
         }
         options.headers['X-API-Key'] = AppConstants.apiKey;
         options.headers['ngrok-skip-browser-warning'] = 'true';
-        options.headers['User-Agent'] = 'SKMobilesApp/1.0';
+        options.headers['User-Agent'] = 'SRMobilesApp/1.0';
         return handler.next(options);
       },
       onError: (error, handler) async {

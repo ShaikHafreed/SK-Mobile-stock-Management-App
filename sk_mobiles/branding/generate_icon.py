@@ -1,5 +1,5 @@
 """
-Generates the SK Mobiles app icon: a blue gradient rounded-square with a
+Generates the SR Mobiles app icon: a blue gradient rounded-square with a
 white phone glyph, matching the login screen's existing branding
 (gradient #1565C0 -> #42A5F5, phone icon motif).
 

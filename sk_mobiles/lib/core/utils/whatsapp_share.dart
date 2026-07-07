@@ -33,7 +33,7 @@ class WhatsAppShare {
     required double total,
   }) {
     final buf = StringBuffer();
-    buf.writeln('🧾 *SK MOBILES*');
+    buf.writeln('🧾 *SR MOBILES*');
     buf.writeln('Mobile Accessories Store');
     buf.writeln('');
     buf.writeln('Bill No: $billNo');

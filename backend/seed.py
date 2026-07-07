@@ -51,7 +51,7 @@ with app.app_context():
     if not User.query.filter_by(username='admin').first():
         admin = User(
             username='admin',
-            full_name='SK Mobiles Admin',
+            full_name='SR Mobiles Admin',
             role_id=admin_role.id
         )
         admin.set_password('admin123')
@@ -66,7 +66,7 @@ with app.app_context():
     if not User.query.filter_by(username='staff').first():
         staff = User(
             username='staff',
-            full_name='SK Mobiles Staff',
+            full_name='SR Mobiles Staff',
             role_id=staff_role.id
         )
         staff.set_password('staff123')

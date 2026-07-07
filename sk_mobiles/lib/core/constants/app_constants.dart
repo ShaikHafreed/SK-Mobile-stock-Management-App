@@ -21,5 +21,5 @@ class AppConstants {
   static const String passwordKey = 'saved_password';
 
   static const int lowStockThreshold = 3;
-  static const String appName = 'SK Mobiles';
+  static const String appName = 'SR Mobiles';
 }

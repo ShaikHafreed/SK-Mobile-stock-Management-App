@@ -777,7 +777,7 @@ class _BillPreview extends StatelessWidget {
                     size: 36),
                 const SizedBox(height: 8),
                 const Text(
-                  'SK MOBILES',
+                  'SR MOBILES',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 22,
@@ -988,7 +988,7 @@ class _BillPreview extends StatelessWidget {
                     color: Colors.red, size: 16),
                 SizedBox(width: 8),
                 Text(
-                  'Thank you for shopping at SK Mobiles!',
+                  'Thank you for shopping at SR Mobiles!',
                   style: TextStyle(
                       color: Colors.green,
                       fontWeight: FontWeight.w600,

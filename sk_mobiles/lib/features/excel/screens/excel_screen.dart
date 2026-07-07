@@ -100,7 +100,7 @@ class _ExcelScreenState
             .toString()
             .substring(7);
         final filename =
-            'SKMobiles_${title.replaceAll(' ', '_')}_$ts.xlsx';
+            'SRMobiles_${title.replaceAll(' ', '_')}_$ts.xlsx';
         final filePath = '${dir.path}/$filename';
         final file = File(filePath);
         await file.writeAsBytes(bytes, flush: true);

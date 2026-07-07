@@ -404,7 +404,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                             ),
                             const SizedBox(height: 16),
                             const Text(
-                              'SK Mobiles',
+                              'SR Mobiles',
                               style: TextStyle(
                                 fontSize: 30,
                                 fontWeight:
@@ -589,7 +589,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                       ),
                       const SizedBox(height: 24),
                       Text(
-                        'SK Mobiles © 2024 · All rights reserved',
+                        'SR Mobiles © 2024 · All rights reserved',
                         style: TextStyle(
                           color: Colors.white
                               .withValues(alpha: 0.4),

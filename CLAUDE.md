@@ -1,7 +1,9 @@
-# SK Mobiles Stock Manager — Master Context
+# SR Mobiles Stock Manager — Master Context
 
 ## What this project is
-Full-stack stock management app for a mobile accessories shop (SK Mobiles).
+Full-stack stock management app for a mobile accessories shop (SR Mobiles,
+branded in-app; underlying project/package identifiers still say "sk mobiles"
+— see note under Key Config Values).
 Owner manages inventory, billing, barcode scanning, Excel exports, and WhatsApp
 bill sharing from an Android phone. Built over multiple days with AI assistance.
 
@@ -49,6 +51,19 @@ c:\Users\shaik\OneDrive\Documents\GitHub\SK-Mobile-stock-Management-App\
 - App logins: admin/admin123 (admin), staff/staff123 (staff)
 - Firebase project: sk-mobiles (sk-mobiles-c5608), package com.skmobiles.sk_mobiles
 - google-services.json at sk_mobiles/android/app/
+- **Branding renamed "SK Mobiles" → "SR Mobiles" (2026-07-07)**, but only in
+  user-visible text (app display name, login/dashboard/billing/profile
+  screens, WhatsApp bill header, Excel filenames, API health message). Left
+  unchanged on purpose: the Android package name (com.skmobiles.sk_mobiles —
+  renaming this creates an entirely new app in Firebase's eyes, breaking the
+  just-fixed Google Sign-In/Phone OTP SHA-1 registration), Firebase project ID
+  (sk-mobiles-c5608 — fixed at creation, can't be renamed), Supabase project
+  name and storage bucket (sk-mobiles-images — renaming would break every
+  existing image_url already stored in the DB), the Flutter/Dart package name
+  (sk_mobiles — touches every import in lib/), the GitHub repo name, and the
+  local folder path (SK-Mobile-stock-Management-App — Vercel's project link,
+  the venv, and PATH env vars all reference this exact path). If a full
+  rebrand including these is ever wanted, treat it as its own project.
 - Supabase DB password is in backend/.env — never commit .env
 - **Supabase DB connections must use the connection pooler, not the direct
   host.** `db.<ref>.supabase.co` only resolves to an IPv6 address — no

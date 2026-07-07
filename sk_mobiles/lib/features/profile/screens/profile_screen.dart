@@ -349,7 +349,7 @@ class _ProfileScreenState
                 _InfoTile(
                   icon: Icons.store,
                   label: 'Shop Name',
-                  value: 'SK Mobiles',
+                  value: 'SR Mobiles',
                   isDark: isDark,
                 ),
                 _InfoTile(
@@ -493,12 +493,12 @@ class _ProfileScreenState
               children: [
                 _SettingTile(
                   icon: Icons.info_outline,
-                  label: 'About SK Mobiles',
+                  label: 'About SR Mobiles',
                   isDark: isDark,
                   onTap: () => showAboutDialog(
                     context: context,
                     applicationName:
-                        'SK Mobiles Stock Manager',
+                        'SR Mobiles Stock Manager',
                     applicationVersion: '1.0.0',
                     applicationIcon:
                         const Icon(

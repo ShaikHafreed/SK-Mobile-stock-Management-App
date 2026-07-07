@@ -179,7 +179,7 @@ class _DashboardScreenState
           ? const Color(0xFF0A0A1A)
           : const Color(0xFFF0F4FF),
       appBar: AppBar(
-        title: const Text('SK Mobiles'),
+        title: const Text('SR Mobiles'),
         backgroundColor: AppTheme.primary,
         foregroundColor: Colors.white,
         elevation: 0,
@@ -769,7 +769,7 @@ class _GreetingCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'SK Mobiles ${username[0].toUpperCase()}${username.substring(1)}!',
+                  'SR Mobiles ${username[0].toUpperCase()}${username.substring(1)}!',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 20,

@@ -39,7 +39,7 @@ def export_category(slug):
         filename = 'Temper_Glass.xlsx'
     elif slug == 'full-inventory':
         buffer = generate_full_inventory_excel()
-        filename = 'SK_Mobiles_Full_Inventory.xlsx'
+        filename = 'SR_Mobiles_Full_Inventory.xlsx'
     else:
         category = Category.query.filter_by(slug=slug, is_active=True).first()
         if not category:
@@ -79,7 +79,7 @@ def export_all():
     return send_file(
         buffer,
         as_attachment=True,
-        download_name='SK_Mobiles_Full_Inventory.xlsx',
+        download_name='SR_Mobiles_Full_Inventory.xlsx',
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
 

@@ -23,7 +23,7 @@ class SKMobilesApp extends ConsumerWidget {
     final themeNotifier = ref.read(themeProvider.notifier);
 
     return MaterialApp.router(
-      title: 'SK Mobiles',
+      title: 'SR Mobiles',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,

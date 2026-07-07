@@ -92,7 +92,7 @@ def create_app(config_name='default'):
     @app.route('/api/health')
     def health():
         return {
-            'status': 'SK Mobiles API is running',
+            'status': 'SR Mobiles API is running',
             'version': '1.0.0'
         }, 200
 
