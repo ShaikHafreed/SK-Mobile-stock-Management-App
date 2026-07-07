@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "795406287321-qpnls6mc2dnlslm1l1j8ivkd50gc08g7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.skmobiles.sk_mobiles",
+            "certificate_hash": "5169408d1445ec2e4a9ad8348c4438068f7cb8cb"
+          }
+        },
+        {
           "client_id": "795406287321-r557d4nouvfu44pq7c0mtajim960t554.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
