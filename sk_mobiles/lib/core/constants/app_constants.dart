@@ -1,12 +1,15 @@
 class AppConstants {
   static const String localUrl =
-      'http://192.168.31.229:5000/api';
+      'http://192.168.48.51:5000/api';
 
   static const String ngrokUrl =
       'https://smudgy-imminent-hankie.ngrok-free.dev/api';
 
-  // Use localUrl for testing, ngrokUrl for anywhere access
-  static const String baseUrl = localUrl;
+  static const String liveUrl =
+      'https://backend-three-murex-79.vercel.app/api';
+
+  // Live backend on Vercel — works from anywhere, no local IP needed
+  static const String baseUrl = liveUrl;
 
   static const String apiKey =
       'sk-mobiles-api-key-2024-hafreed';
