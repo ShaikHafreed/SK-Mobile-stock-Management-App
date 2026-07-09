@@ -13,6 +13,11 @@ backend/.env
 backend/venv/
 backend/.venv/
 
+# Android release signing — NEVER push
+sk_mobiles/android/key.properties
+*.jks
+*.keystore
+
 # Flutter
 sk_mobiles/build/
 sk_mobiles/.dart_tool/
