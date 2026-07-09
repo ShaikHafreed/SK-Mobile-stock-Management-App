@@ -44,6 +44,10 @@ c:\Users\shaik\OneDrive\Documents\GitHub\SK-Mobile-stock-Management-App\
   — deployed on Vercel (project spin-x/backend), this is what the app
   points to by default now (AppConstants.baseUrl = liveUrl). Local IP
   and ngrok URLs are kept in app_constants.dart as fallbacks only.
+- **Custom domain (2026-07-09): https://stock.hafreedshaik.online/api**
+  — same backend, proxied via Vercel custom domain on hafreedshaik.online
+  (DNS on Hostinger). Health check confirmed working at both this URL and
+  the raw *.vercel.app URL above.
 - Local API (fallback): http://192.168.31.229:5000/api (check ipconfig if IP changed;
   this machine has flaky routing when USB-tethered to a phone — see below)
 - API key header: X-API-Key: sk-mobiles-api-key-2024-hafreed
@@ -97,6 +101,28 @@ with Open button, Activity logs, Barcode scanner (mobile_scanner, torch),
 Billing with GST 18% + bill preview, WhatsApp bill share (wa.me deep link),
 Profile page (live stats, theme switcher, quick links), Dark/Light/System theme.
 
+## Play Store Readiness (2026-07-09) — prepped, submission deferred by user
+- Release keystore generated at C:\Users\shaik\keystores\sr_mobiles_release.jks
+  (alias sr_mobiles_upload; NOT in repo, NOT gitignored-relevant since it's
+  outside the repo folder entirely — back this up somewhere safe, losing it
+  means losing the ability to publish updates under the same app identity).
+- sk_mobiles/android/key.properties (gitignored, local-only) points Gradle at
+  it; build.gradle.kts signingConfigs falls back to the debug key if
+  key.properties is absent, so a fresh clone still builds fine.
+- Release SHA-1 (8E:1E:36:1D:C7:9E:71:19:51:C4:A1:11:58:95:1A:9B:92:DD:B0:92)
+  registered in Firebase console; google-services.json updated accordingly —
+  Google Sign-In/Phone OTP confirmed to work against release-signed builds.
+- Privacy policy page live at /privacy on the backend (required for Play
+  Console's Data Safety section).
+- Signed release App Bundle built and verified fresh (not a stale Gradle
+  cache reuse — confirmed via a clean rebuild) at
+  sk_mobiles/build/app/outputs/bundle/release/app-release.aab.
+- Signed release APK also built (for direct sideload testing, not Play
+  Store) at sk_mobiles/build/app/outputs/flutter-apk/app-release.apk.
+- User explicitly deferred the actual Play Console account/listing/
+  submission step to do themselves later — do not proceed to that
+  unprompted.
+
 ## KNOWN OPEN ISSUES
 1. Firebase Phone OTP error 17006 (region block). Test number +918341554694
    code 123456 should be configured in Firebase console. Real SMS needs Blaze plan.
@@ -122,7 +148,8 @@ Treat as resolved; it's expected behavior, not a bug.)
 
 ## NEXT FEATURES (roadmap)
 - Push notifications for low stock (flutter_local_notifications)
-- Signed release APK (keystore + build config)
+- Play Console submission (listing, screenshots, Data Safety form) — user
+  will do this themselves when ready; app is fully prepped (see above)
 - Sales history / bill records saved in DB (new bills table + routes)
 - Dashboard sales analytics (charts)
 - Multi-user roles enforcement (admin vs staff permissions in UI)

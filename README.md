@@ -2,9 +2,20 @@
 
 A full-stack inventory, billing, and operations app for a mobile accessories retail shop. Built to replace manual, paper-based stock tracking — used daily to run real business operations: inventory, point-of-sale billing, barcode scanning, and reporting.
 
-**Live backend:** [`https://backend-three-murex-79.vercel.app/api/health`](https://backend-three-murex-79.vercel.app/api/health)
+**Live backend:** [`https://stock.hafreedshaik.online/api/health`](https://stock.hafreedshaik.online/api/health) (custom domain, proxied through Vercel — also reachable directly at [`backend-three-murex-79.vercel.app/api/health`](https://backend-three-murex-79.vercel.app/api/health))
 
-> This is a private business application — the app itself is not published to the Play Store, and the database contains real shop inventory data. The health-check link above is safe to share; it doesn't expose any data.
+> This is a private business application — the app itself is not published to the Play Store (Play Store release is prepped and ready, pending submission), and the database contains real shop inventory data. The health-check link above is public and safe to share; it doesn't expose any data, and every other route requires an API key.
+
+## Installing the app (sideload)
+
+The Android app isn't on the Play Store yet, so it's installed directly as a signed APK:
+
+1. On the Android phone, get the `app-release.apk` file from whoever built it (shared via WhatsApp, Drive, USB, etc.) and open it from Downloads/Files.
+2. If prompted, allow installs from that source: **Settings → Apps → Special access → Install unknown apps**, enable it for the app you used to open the file (Chrome, Files, WhatsApp).
+3. Tap **Install**, then open the app and log in.
+4. If a previous debug build of the app is already on the phone, uninstall it first — a release build is signed with a different key, and Android refuses to install over a mismatched signature (`INSTALL_FAILED_UPDATE_INCOMPATIBLE`).
+
+Built with `flutter build apk --release` from `sk_mobiles/`; output lands at `sk_mobiles/build/app/outputs/flutter-apk/app-release.apk`.
 
 ## Features
 
